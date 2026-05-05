@@ -727,7 +727,7 @@ footer {
   }
 
   .itunes-card.active {
-    transform: scale(1.04);
+    transform: scale(.9);
   }
 }
 
