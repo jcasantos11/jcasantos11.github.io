@@ -523,3 +523,33 @@ nav button[aria-current] svg { color: var(--accent); }
 .work-cta:hover { box-shadow: 0 0 22px var(--glow-active); }
 
 .contact-cta { margin: 14px 0 0; }
+
+.work-cta-envelope { position: relative; display: grid; place-items: center; flex: none; width: 17px; height: 17px; }
+.work-cta-envelope svg { grid-area: 1 / 1; }
+.work-cta-mail-open { opacity: 0; }
+.work-cta:is(:hover, :focus-visible, .is-launching) .work-cta-mail-closed { opacity: 0; }
+.work-cta:is(:hover, :focus-visible, .is-launching) .work-cta-mail-open { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .work-cta-envelope svg { transition: opacity 140ms ease, transform 160ms ease; }
+  .work-cta-mail-open { transform: translateY(2px) scale(.86); }
+  .work-cta:is(:hover, :focus-visible, .is-launching) .work-cta-mail-open { transform: translateY(-2px) scale(1.08); }
+  .work-cta.is-launching .work-cta-envelope {
+    animation: work-email-launch 270ms cubic-bezier(.3, .05, .6, .95) both;
+    filter: drop-shadow(0 0 6px var(--accent));
+  }
+  .work-cta.is-launching .work-cta-envelope::after {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 5px;
+    width: 8px;
+    height: 12px;
+    background: linear-gradient(var(--accent), transparent);
+    border-radius: 50%;
+  }
+}
+@keyframes work-email-launch {
+  0% { transform: translate(0, 0) rotate(0); }
+  24% { transform: translate(-2px, 3px) rotate(9deg) scale(.92); }
+  100% { transform: translate(27px, -35px) rotate(30deg) scale(.7); opacity: 0; }
+}

@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 import {
-  ArrowLeft, ArrowUp, BriefcaseBusiness, ChevronRight, CodeXml, FolderOpen, Globe, GraduationCap, Mail, MapPin, Menu, Moon, PanelLeftClose, PanelLeftOpen, FileDown, Sun, ChevronUp,
+  ArrowLeft, ArrowUp, BriefcaseBusiness, ChevronRight, CodeXml, FolderOpen, Globe, GraduationCap, Mail, MailOpen, MapPin, Menu, Moon, PanelLeftClose, PanelLeftOpen, FileDown, Sun, ChevronUp,
   MessageCircle, Plus, Sparkles, UserRound, X,
 } from 'lucide-react'
 import { findEmployerTopic, profile, topics, workEmailHref } from './profile'
@@ -85,6 +85,41 @@ function CaseStudy({ study, headingRef }) {
 }
 
 const unmatchedSummary = 'I couldn’t match that question to the topics in my portfolio. You can email it to me or try one of the questions below.'
+
+function WorkEmailLink({ href, children, contact = false }) {
+  const [launching, setLaunching] = useState(false)
+  const launchTimer = useRef(null)
+
+  useEffect(() => () => window.clearTimeout(launchTimer.current), [])
+
+  function launchEmail(event) {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey ||
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+
+    event.preventDefault()
+    if (launchTimer.current !== null) return
+    setLaunching(true)
+    launchTimer.current = window.setTimeout(() => {
+      launchTimer.current = null
+      setLaunching(false)
+      window.location.href = href
+    }, 280)
+  }
+
+  return (
+    <a
+      className={`work-cta${contact ? ' contact-cta' : ''}${launching ? ' is-launching' : ''}`}
+      href={href}
+      onClick={launchEmail}
+    >
+      <span className="work-cta-envelope" aria-hidden="true">
+        <Mail className="work-cta-mail-closed" size={17} />
+        <MailOpen className="work-cta-mail-open" size={17} />
+      </span>
+      {children}
+    </a>
+  )
+}
 
 function App() {
   const [messages, setMessages] = useState([])
@@ -369,9 +404,7 @@ function App() {
               </div>
               <h1 id="welcome-title">Hi, I’m <span>{profile.firstName}.</span></h1>
               <p>Welcome to my interactive portfolio. Ask me about my work,<br className="desktop-break" /> experience, or the tools I use.</p>
-              <a className="work-cta" href={workEmailHref}>
-                <Mail size={17} aria-hidden="true" /> Work with me
-              </a>
+              <WorkEmailLink href={workEmailHref}>Work with me</WorkEmailLink>
               <section className="featured-projects" aria-labelledby="featured-heading">
                 <h2 id="featured-heading">Featured projects</h2>
                 <div className="featured-grid">
@@ -453,9 +486,7 @@ function App() {
                               <ul className="answer-links">{topic.caseStudies.map(item => <li key={item.slug}><a href={caseStudyHref(item)}>{item.name} case study</a></li>)}</ul>
                             )}
                             {topic?.action && (
-                              <a className="work-cta contact-cta" href={topic.action.href}>
-                                <Mail size={17} aria-hidden="true" /> {topic.action.label}
-                              </a>
+                              <WorkEmailLink href={topic.action.href} contact>{topic.action.label}</WorkEmailLink>
                             )}
                             {topic?.links && <ul className="answer-links">{topic.links.map(([label, href]) => <li key={href}><a href={href}>{label}</a></li>)}</ul>}
                           </div>
