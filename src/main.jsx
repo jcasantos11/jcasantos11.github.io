@@ -55,66 +55,9 @@ function CaseStudy({ study, headingRef }) {
 
 const unmatchedSummary = 'I couldn’t match that question to the topics in my portfolio. You can email it to me or try one of the questions below.'
 
-function TypingSummary({ text, hasDetails, onComplete }) {
-  const [visibleCount, setVisibleCount] = useState(2)
-
-  useEffect(() => {
-    const duration = Math.min(hasDetails ? 1200 : 1650, Math.max(450, text.length * 13))
-    let frame
-    let startedAt
-
-    function reveal(now) {
-      startedAt ??= now
-      const progress = Math.min(1, (now - startedAt) / duration)
-      if (progress === 1) {
-        onComplete()
-        return
-      }
-
-      setVisibleCount(Math.max(2, Math.floor(text.length * progress)))
-      frame = requestAnimationFrame(reveal)
-    }
-
-    frame = requestAnimationFrame(reveal)
-    return () => cancelAnimationFrame(frame)
-  }, [text, hasDetails, onComplete])
-
-  return <span className="typing-summary" aria-hidden="true">{text.slice(0, visibleCount)}</span>
-}
-
-function ReplyDetails({ isTyping, onPresent, children }) {
-  const detailsRef = useRef(null)
-  const wasTyping = useRef(isTyping)
-
-  useLayoutEffect(() => {
-    const justFinished = wasTyping.current && !isTyping
-    wasTyping.current = isTyping
-    if (!justFinished || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
-
-    const entries = detailsRef.current.querySelectorAll('.email-question, dl > div, ul > li')
-    const stagger = 560 / Math.max(1, entries.length - 1)
-    const animations = Array.from(entries, (entry, index) => {
-      const delay = index * Math.min(125, stagger)
-      const animation = entry.animate?.(
-        [{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'translateY(0)' }],
-        { duration: 420, delay, easing: 'ease-out', fill: 'backwards' },
-      )
-      const timer = window.setTimeout(() => onPresent(entry, 'smooth'), delay)
-      return { animation, timer }
-    })
-
-    return () => animations.forEach(({ animation, timer }) => {
-      animation?.cancel()
-      window.clearTimeout(timer)
-    })
-  }, [isTyping, onPresent])
-
-  return <div ref={detailsRef} hidden={isTyping}>{children}</div>
-}
-
 function App() {
   const [messages, setMessages] = useState([])
-  const [typingReply, setTypingReply] = useState(null)
+  const pendingPresentation = useRef(null)
   const [input, setInput] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -132,7 +75,6 @@ function App() {
   }, [])
   const [study, setStudy] = useState(currentCaseStudy)
   const studyHeading = useRef(null)
-  const sidebarJump = useRef(null)
   const [activeTopic, setActiveTopic] = useState(undefined)
 
   useEffect(() => {
@@ -145,17 +87,13 @@ function App() {
     document.title = study ? `${study.name} | Jose Carlos Santos` : 'Jose Carlos Santos | Software Engineering Portfolio'
     if (study) {
       followReply.current = false
-      setTypingReply(null)
       studyHeading.current?.focus({ preventScroll: true })
     }
   }, [study])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const viewport = viewportRef.current
-    const exchange = sidebarJump.current === null
-      ? viewport.querySelector('.exchange:last-child')
-      : viewport.querySelectorAll('.exchange')[sidebarJump.current]
-    sidebarJump.current = null
+    const exchange = viewport.querySelector('.exchange:last-child')
     if (!exchange) {
       viewport.scrollTop = 0
       return
@@ -163,17 +101,33 @@ function App() {
 
     const exchangeTop = exchange.getBoundingClientRect().top - viewport.getBoundingClientRect().top
     viewport.scrollTop = Math.min(viewport.scrollTop + exchangeTop, viewport.scrollHeight - viewport.clientHeight)
-  }, [messages, study])
+    if (pendingPresentation.current !== messages.at(-1)) return
+    pendingPresentation.current = null
+    followReply.current = true
 
-  useEffect(() => {
-    if (!typingReply || study || typeof ResizeObserver === 'undefined') return
-    const paragraph = viewportRef.current.querySelector('.exchange:last-child .reply-body > p')
-    if (!paragraph) return
+    const followUps = exchange.querySelector('.follow-ups')
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      if (followUps) presentEntry(followUps)
+      return
+    }
 
-    const observer = new ResizeObserver(() => presentEntry(paragraph))
-    observer.observe(paragraph)
-    return () => observer.disconnect()
-  }, [typingReply, study, presentEntry])
+    const entries = exchange.querySelectorAll('.reply-body > p, .email-question, dl > div, .reply-body li, .follow-ups')
+    const stagger = Math.min(120, 650 / Math.max(1, entries.length - 1))
+    const presentation = Array.from(entries, (entry, index) => {
+      const delay = index * stagger
+      const animation = entry.animate?.(
+        [{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'translateY(0)' }],
+        { duration: 380, delay, easing: 'ease-out', fill: 'backwards' },
+      )
+      const timer = window.setTimeout(() => presentEntry(entry, 'smooth'), delay)
+      return { animation, timer }
+    })
+
+    return () => presentation.forEach(({ animation, timer }) => {
+      animation?.cancel()
+      window.clearTimeout(timer)
+    })
+  }, [messages, study, presentEntry])
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -199,35 +153,20 @@ function App() {
     const answerTopic = topic ?? findEmployerTopic(text) ?? searchableTopics.find(item => item.keywords.test(text))
     if (study) window.location.hash = ''
     const reply = { text, topic: answerTopic }
-    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    followReply.current = !reduceMotion
-    setTypingReply(reduceMotion ? null : reply)
+    pendingPresentation.current = reply
     setMessages(current => [...current, reply])
     setActiveTopic(answerTopic?.id)
     setInput('')
     setMenuOpen(false)
   }
 
-  const finishTyping = React.useCallback(() => setTypingReply(null), [])
-
   function openSidebarTopic(topic) {
-    const index = messages.findLastIndex(message => message.topic?.id === topic.id)
-    if (index === -1) {
-      ask(topic.prompt, topic)
+    if (messages.at(-1)?.topic?.id === topic.id) {
+      setMenuOpen(false)
       return
     }
 
-    stopFollowingReply()
-    setActiveTopic(topic.id)
-    setMenuOpen(false)
-    if (study) {
-      sidebarJump.current = index
-      window.location.hash = ''
-      return
-    }
-    const viewport = viewportRef.current
-    const exchange = viewport.querySelectorAll('.exchange')[index]
-    if (exchange) viewport.scrollTop += exchange.getBoundingClientRect().top - viewport.getBoundingClientRect().top
+    ask(topic.prompt, topic)
   }
 
   function stopFollowingReply() {
@@ -248,7 +187,7 @@ function App() {
     if (study) window.location.hash = ''
     stopFollowingReply()
     setMessages([])
-    setTypingReply(null)
+    pendingPresentation.current = null
     setActiveTopic(undefined)
     setInput('')
     setMenuOpen(false)
@@ -369,7 +308,6 @@ function App() {
             <section className="conversation content-width" role="log" aria-label="Portfolio conversation">
               {messages.map((reply, index) => {
                 const { text, topic } = reply
-                const isTyping = typingReply === reply
                 const summary = topic?.summary ?? unmatchedSummary
                 return (
                   <div className="exchange" key={index}>
@@ -378,13 +316,8 @@ function App() {
                       <span className="answer-icon" aria-hidden="true"><Sparkles size={17} /></span>
                       <div className="answer-body reply-body">
                         <h2>{topic?.label ?? 'Portfolio assistant'}</h2>
-                        <p>
-                          <span className="screen-reader-text">{summary}</span>
-                          {isTyping
-                            ? <TypingSummary text={summary} hasDetails={Boolean(topic?.details || topic?.websites?.length)} onComplete={finishTyping} />
-                            : <span aria-hidden="true">{summary}</span>}
-                        </p>
-                        <ReplyDetails isTyping={isTyping} onPresent={presentEntry}>
+                        <p>{summary}</p>
+                        <div>
                           {!topic && (
                             <a className="email-question" href={`mailto:${profile.email}?subject=${encodeURIComponent('Portfolio question')}&body=${encodeURIComponent(text)}`}>
                               <Mail size={16} aria-hidden="true" /> Email this question to JC
@@ -411,15 +344,15 @@ function App() {
                             <ul className="answer-links">{topic.caseStudies.map(item => <li key={item.slug}><a href={caseStudyHref(item)}>{item.name} case study</a></li>)}</ul>
                           )}
                           {topic?.links && <ul className="answer-links">{topic.links.map(([label, href]) => <li key={href}><a href={href}>{label}</a></li>)}</ul>}
-                        </ReplyDetails>
+                        </div>
                       </div>
                     </article>
-                    {!isTyping && <div className="follow-ups" role="group" aria-label="Suggested follow-up questions">
+                    <div className="follow-ups" role="group" aria-label="Suggested follow-up questions">
                       {(followUps[topic?.category ?? topic?.id] ?? followUps.about).map(id => {
                         const suggestion = topics.find(item => item.id === id)
                         return <button key={id} onClick={() => ask(suggestion.prompt, suggestion)}>{suggestion.prompt}</button>
                       })}
-                    </div>}
+                    </div>
                   </div>
                 )
               })}
