@@ -146,3 +146,32 @@ nav button[aria-current] svg { color: var(--accent); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; }
 }
+
+.website-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+  gap: 12px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.website-grid a {
+  display: block;
+  height: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--sidebar);
+}
+.website-grid a:hover { border-color: var(--accent); }
+.website-grid img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 9px 9px 0 0;
+}
+.website-grid a > div { padding: 12px; }
+.website-grid h3 { margin: 0 0 4px; font-size: 1rem; }
+.website-grid span { color: var(--accent); font-size: .8125rem; }
+.website-grid p { margin: 6px 0 0; font-size: .875rem; }

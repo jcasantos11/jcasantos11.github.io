@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import {
-  ArrowUp, BriefcaseBusiness, ChevronRight, CodeXml, FolderOpen, GraduationCap, Mail, Menu,
+  ArrowUp, BriefcaseBusiness, ChevronRight, CodeXml, FolderOpen, Globe, GraduationCap, Mail, Menu,
   MessageCircle, Plus, Sparkles, UserRound, X,
 } from 'lucide-react'
 import { profile, topics } from './profile'
 import './styles.css'
 
-const icons = { about: UserRound, experience: BriefcaseBusiness, projects: FolderOpen, skills: CodeXml, education: GraduationCap, contact: Mail }
+const icons = { about: UserRound, experience: BriefcaseBusiness, projects: FolderOpen, websites: Globe, skills: CodeXml, education: GraduationCap, contact: Mail }
 
 const searchableTopics = [...topics.slice(1), topics[0]]
 
@@ -21,7 +21,14 @@ function App() {
 
   useEffect(() => {
     const viewport = viewportRef.current
-    viewport.scrollTop = messages.length ? viewport.scrollHeight : 0
+    const exchange = viewport.querySelector('.exchange:last-child')
+    if (!exchange) {
+      viewport.scrollTop = 0
+      return
+    }
+
+    const exchangeTop = exchange.getBoundingClientRect().top - viewport.getBoundingClientRect().top
+    viewport.scrollTop = Math.min(viewport.scrollTop + exchangeTop, viewport.scrollHeight - viewport.clientHeight)
   }, [messages])
 
   useEffect(() => {
@@ -99,7 +106,7 @@ function App() {
               <h1 id="welcome-title">Hi, I’m <span>{profile.firstName}.</span></h1>
               <p>Welcome to my interactive portfolio. Ask me about my work,<br className="desktop-break" /> experience, or the tools I use.</p>
               <div className="suggestions">
-                {topics.slice(0, 4).map(topic => {
+                {topics.filter(topic => ['experience', 'projects', 'websites', 'skills'].includes(topic.id)).map(topic => {
                   const Icon = icons[topic.id]
                   return <button className="suggestion" key={topic.id} onClick={() => ask(topic.prompt, topic)}>
                     <span className="suggestion-icon"><Icon size={18} /></span>
@@ -118,8 +125,24 @@ function App() {
                     <span className="answer-icon" aria-hidden="true"><Sparkles size={17} /></span>
                     <div className="answer-body">
                       <h2>{topic?.label ?? 'Portfolio assistant'}</h2>
-                      <p>{topic?.summary ?? 'Try asking about my background, experience, projects, skills, education, or contact details.'}</p>
+                      <p>{topic?.summary ?? 'Try asking about my background, experience, projects, websites, skills, education, or contact details.'}</p>
                       {topic?.details && <dl>{topic.details.map(([name, description]) => <div key={name}><dt>{name}</dt><dd>{description}</dd></div>)}</dl>}
+                      {topic?.websites && (
+                        <ul className="website-grid">
+                          {topic.websites.map(site => (
+                            <li key={site.url}>
+                              <a href={site.url} target="_blank" rel="noopener noreferrer">
+                                {site.image && <img src={`${import.meta.env.BASE_URL}images/${site.image}`} alt="" loading="lazy" />}
+                                <div>
+                                  <h3>{site.name}</h3>
+                                  <span>{site.platform}</span>
+                                  <p>{site.description}</p>
+                                </div>
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                       {topic?.links && <ul className="answer-links">{topic.links.map(([label, href]) => <li key={href}><a href={href}>{label}</a></li>)}</ul>}
                     </div>
                   </article>
@@ -146,7 +169,7 @@ function App() {
               <button type="submit" disabled={!input.trim()} aria-label="Send message"><ArrowUp size={19} /></button>
             </div>
           </form>
-          <p>Answers are drawn from my résumé.</p>
+          <p>Answers are drawn from my résumé and portfolio.</p>
         </footer>
       </main>
     </div>

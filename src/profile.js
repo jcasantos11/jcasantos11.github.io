@@ -1,3 +1,5 @@
+import { websites } from './websites.js'
+
 export const profile = {
   name: 'Jose Carlos Santos',
   firstName: 'JC',
@@ -44,6 +46,15 @@ export const topics = [
       ['Philippine Constructors Association', 'Developed the organization’s website.'],
     ],
     links: [['Philippine Constructors Association website', 'https://philippineconstructors.org/']],
+  },
+  {
+    id: 'websites',
+    label: 'Websites',
+    prompt: 'What websites have you worked on?',
+    description: 'WordPress and Shopify client work',
+    keywords: /websites?|web sites?|client sites?|storefronts?|online stores?/i,
+    summary: 'Here are websites and storefronts I’ve developed, customized, or supported.',
+    websites,
   },
   {
     id: 'skills',
