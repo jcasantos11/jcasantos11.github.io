@@ -11,6 +11,17 @@ import './styles.css'
 
 const icons = { about: UserRound, experience: BriefcaseBusiness, projects: FolderOpen, websites: Globe, skills: CodeXml, education: GraduationCap, contact: Mail }
 
+function TopicIcon({ id, size }) {
+  const Icon = icons[id]
+
+  return (
+    <span className="topic-icon" data-topic={id} aria-hidden="true">
+      <Icon size={size} />
+      {id === 'contact' && <MailOpen className="topic-icon-mail-open" size={size} />}
+    </span>
+  )
+}
+
 const searchableTopics = [...topics.slice(1), topics[0]]
 
 const followUps = {
@@ -329,10 +340,9 @@ function App() {
         <button className="new-chat" onClick={reset} aria-label="New chat" data-tooltip="New chat"><Plus size={18} /><span>New chat</span></button>
         <nav aria-label="Portfolio topics">
           <h2>Explore</h2>
-          {topics.map(topic => {
-            const Icon = icons[topic.id]
-            return <button key={topic.id} aria-label={topic.label} data-tooltip={topic.label} aria-current={activeTopic === topic.id ? 'true' : undefined} onClick={() => openSidebarTopic(topic)}><Icon size={17} /><span>{topic.label}</span></button>
-          })}
+          {topics.map(topic => (
+            <button key={topic.id} aria-label={topic.label} data-tooltip={topic.label} aria-current={activeTopic === topic.id ? 'true' : undefined} onClick={() => openSidebarTopic(topic)}><TopicIcon id={topic.id} size={17} /><span className="topic-label">{topic.label}</span></button>
+          ))}
         </nav>
         <details className="profile">
           <summary aria-label="Contact and location" data-tooltip="Contact and location">
@@ -419,9 +429,8 @@ function App() {
               </section>
               <div className="suggestions">
                 {topics.filter(topic => ['experience', 'projects', 'websites', 'skills'].includes(topic.id)).map(topic => {
-                  const Icon = icons[topic.id]
                   return <button className="suggestion" key={topic.id} onClick={() => ask(topic.prompt, topic)}>
-                    <span className="suggestion-icon"><Icon size={18} /></span>
+                    <span className="suggestion-icon"><TopicIcon id={topic.id} size={18} /></span>
                     <span className="suggestion-text"><strong>{topic.prompt}</strong><small>{topic.description}</small></span>
                     <ChevronRight className="suggestion-chevron" size={16} aria-hidden="true" />
                   </button>

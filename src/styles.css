@@ -165,15 +165,15 @@ nav button[aria-current] svg { color: var(--accent); }
   .sidebar { min-width: 0; transition: padding-inline 280ms cubic-bezier(.22, 1, .36, 1); }
   .app.sidebar-collapsed { grid-template-columns: 64px minmax(0, 1fr); }
   .sidebar-collapsed .sidebar { padding-inline: 9px; overflow: visible; z-index: 2; }
-  .sidebar :is(.brand-name, .new-chat span, nav button span, .profile-identity, .profile-chevron) {
+  .sidebar :is(.brand-name, .new-chat span, .topic-label, .profile-identity, .profile-chevron) {
     min-width: 0;
     max-width: 180px;
     overflow: hidden;
     transition: opacity 140ms ease, max-width 280ms cubic-bezier(.22, 1, .36, 1);
   }
-  .sidebar :is(.brand-name, .new-chat span, nav button span) { white-space: nowrap; }
+  .sidebar :is(.brand-name, .new-chat span, .topic-label) { white-space: nowrap; }
   .sidebar :is(.new-chat, nav button) svg { flex: none; }
-  .sidebar-collapsed :is(.brand-name, .new-chat span, nav button span, .profile-identity, .profile-chevron) {
+  .sidebar-collapsed :is(.brand-name, .new-chat span, .topic-label, .profile-identity, .profile-chevron) {
     max-width: 0;
     opacity: 0;
   }
@@ -557,18 +557,66 @@ nav button[aria-current] svg { color: var(--accent); }
   100% { transform: translate(60px, -77px) rotate(38deg) scale(.84); color: var(--accent); opacity: 0; }
 }
 
+.topic-icon { display: inline-grid; place-items: center; flex: none; }
+.topic-icon > svg { grid-area: 1 / 1; }
+.topic-icon-mail-open { opacity: 0; }
+
 @media (prefers-reduced-motion: no-preference) {
-  .suggestion-icon svg, .sidebar nav button > svg {
-    transition: transform 200ms cubic-bezier(.2, .75, .35, 1.4);
+  :is(.suggestion, .sidebar nav button):is(:hover, :focus-visible) .topic-icon[data-topic="about"] circle {
+    animation: topic-glance 480ms ease-in-out;
   }
-  .suggestion:focus-visible .suggestion-icon svg,
-  .sidebar nav button:focus-visible > svg {
-    transform: translateY(-2px) rotate(-10deg) scale(1.13);
+  :is(.suggestion, .sidebar nav button):is(:hover, :focus-visible) .topic-icon[data-topic="experience"] > svg {
+    animation: topic-briefcase-pass 500ms ease-in-out;
+  }
+  :is(.suggestion, .sidebar nav button):is(:hover, :focus-visible) .topic-icon[data-topic="projects"] > svg {
+    transform-origin: 25% 80%;
+    animation: topic-folder-hinge 520ms ease-in-out;
+  }
+  :is(.suggestion, .sidebar nav button):is(:hover, :focus-visible) .topic-icon[data-topic="websites"] > svg {
+    animation: topic-globe-spin 650ms ease-in-out;
+  }
+  :is(.suggestion, .sidebar nav button):is(:hover, :focus-visible) .topic-icon[data-topic="skills"] path {
+    stroke-dasharray: 22;
+    animation: topic-code-draw 220ms ease-out both;
+  }
+  :is(.suggestion, .sidebar nav button):is(:hover, :focus-visible) .topic-icon[data-topic="skills"] path:nth-child(1) { animation-delay: 130ms; }
+  :is(.suggestion, .sidebar nav button):is(:hover, :focus-visible) .topic-icon[data-topic="skills"] path:nth-child(3) { animation-delay: 65ms; }
+  .topic-icon[data-topic="education"] > svg {
+    transform-origin: 52% 78%;
+    transition: transform 220ms cubic-bezier(.2, .75, .35, 1.35);
+  }
+  :is(.suggestion, .sidebar nav button):is(:hover, :focus-visible) .topic-icon[data-topic="education"] > svg {
+    transform: translateY(-2px) rotate(-22deg);
+  }
+  .topic-icon[data-topic="contact"] > svg { transition: opacity 130ms ease, transform 180ms ease; }
+  .topic-icon-mail-open { transform: translateY(2px) scale(.9); }
+  :is(.suggestion, .sidebar nav button):is(:hover, :focus-visible) .topic-icon[data-topic="contact"] > svg:first-child { opacity: 0; }
+  :is(.suggestion, .sidebar nav button):is(:hover, :focus-visible) .topic-icon-mail-open {
+    opacity: 1;
+    transform: translateY(-1px) scale(1.1);
   }
 }
-@media (prefers-reduced-motion: no-preference) and (hover: hover) {
-  .suggestion:hover .suggestion-icon svg,
-  .sidebar nav button:hover > svg {
-    transform: translateY(-2px) rotate(-10deg) scale(1.13);
-  }
+
+@keyframes topic-glance {
+  0%, 100% { transform: translate(0, 0); }
+  28% { transform: translate(3px, -1px); }
+  68% { transform: translate(-2px, 0); }
+}
+@keyframes topic-briefcase-pass {
+  0%, 100% { opacity: 1; transform: translateX(0) scale(1); }
+  38% { opacity: 0; transform: translateX(17px) scale(1.25); }
+  40% { opacity: 0; transform: translateX(-17px) scale(.8); }
+}
+@keyframes topic-folder-hinge {
+  0%, 100% { transform: rotate(0); }
+  30% { transform: rotate(-23deg); }
+  65% { transform: rotate(11deg); }
+}
+@keyframes topic-globe-spin {
+  from { transform: perspective(45px) rotateY(0deg); }
+  to { transform: perspective(45px) rotateY(360deg); }
+}
+@keyframes topic-code-draw {
+  from { stroke-dashoffset: 22; }
+  to { stroke-dashoffset: 0; }
 }
