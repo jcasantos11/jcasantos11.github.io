@@ -529,14 +529,14 @@ nav button[aria-current] svg { color: var(--accent); }
   inherits: false;
   initial-value: 0deg;
 }
-.composer.is-waiting {
+:is(.composer, .composer-toggle).is-waiting {
   position: relative;
   border-color: var(--accent);
   box-shadow: 0 0 24px var(--glow-active);
 }
 @media (prefers-reduced-motion: no-preference) {
-  .composer.is-waiting { border-color: var(--accent-border); }
-  .composer.is-waiting::after {
+  :is(.composer, .composer-toggle).is-waiting { border-color: var(--accent-border); }
+  :is(.composer, .composer-toggle).is-waiting::after {
     content: '';
     position: absolute;
     inset: -1px;
@@ -775,4 +775,47 @@ nav button[aria-current] svg { color: var(--accent); }
 @keyframes moon-twinkle {
   0%, 100% { opacity: 0; transform: scale(.4) rotate(-18deg); }
   40% { opacity: 1; transform: scale(1.2) rotate(12deg); }
+}
+
+
+.composer-toggle, .composer .composer-close { display: none; }
+@media (max-width: 760px) {
+  .bottom:not(.mobile-compose-open) { padding-block: 6px 10px; }
+  .bottom:not(.mobile-compose-open) > :is(.composer, p),
+  .bottom.mobile-compose-open > .composer-toggle { display: none; }
+  .composer-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    min-height: 44px;
+    padding: 7px 13px;
+    border: 1px solid var(--composer-border);
+    border-radius: 12px;
+    background: var(--composer-surface);
+    color: var(--muted);
+    box-shadow: 0 0 18px var(--glow);
+    font-size: .875rem;
+    font-weight: 700;
+    text-align: left;
+  }
+  .composer-toggle svg { color: var(--accent); flex: none; }
+  .composer-toggle:hover { color: var(--accent); border-color: var(--accent); }
+  .bottom.mobile-compose-open .composer {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 6px;
+    padding: 7px;
+  }
+  .bottom.mobile-compose-open .composer textarea { min-height: 32px; max-height: 5rem; }
+  .composer-toolbar { gap: 4px; }
+  .composer-hint { display: none; }
+  .composer .composer-close {
+    display: grid;
+    width: 32px;
+    height: 36px;
+    background: transparent;
+    color: var(--muted);
+  }
+  .composer button.composer-close:hover { background: var(--accent-surface); color: var(--accent); }
 }

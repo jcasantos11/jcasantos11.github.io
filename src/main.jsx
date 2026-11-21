@@ -3,7 +3,7 @@ import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 import {
   ArrowLeft, ArrowUp, BriefcaseBusiness, ChevronRight, CodeXml, FolderOpen, Globe, GraduationCap, Mail, MailOpen, MapPin, Menu, Moon, PanelLeftClose, PanelLeftOpen, FileDown, Sun, ChevronUp,
-  MessageCircle, Plus, Sparkles, UserRound, X,
+  MessageCircle, PenLine, Plus, Sparkles, UserRound, X,
 } from 'lucide-react'
 import { findEmployerTopic, profile, topics, workEmailHref } from './profile'
 import { caseStudies } from './case-studies'
@@ -223,6 +223,8 @@ function App() {
   const pendingPresentation = useRef(null)
   const [pendingReply, setPendingReply] = useState(null)
   const [input, setInput] = useState('')
+  const [composerOpen, setComposerOpen] = useState(false)
+  const composerToggleRef = useRef(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [theme, setTheme] = useState(initialTheme)
@@ -426,6 +428,10 @@ function App() {
     setMessages(current => [...current, reply])
     setActiveTopic(answerTopic?.id)
     setInput('')
+    if (composerOpen && window.matchMedia?.('(max-width: 760px)').matches) {
+      inputRef.current?.blur()
+      setComposerOpen(false)
+    }
     setMenuOpen(false)
   }
 
@@ -445,6 +451,16 @@ function App() {
     viewport.scrollTo({ top: viewport.scrollTop, behavior: 'instant' })
   }
 
+  function openComposer() {
+    flushSync(() => setComposerOpen(true))
+    inputRef.current?.focus({ preventScroll: true })
+  }
+
+  function closeComposer() {
+    flushSync(() => setComposerOpen(false))
+    composerToggleRef.current?.focus({ preventScroll: true })
+  }
+
   function handleComposerKeyDown(event) {
     if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
       event.preventDefault()
@@ -461,7 +477,12 @@ function App() {
     setActiveTopic(undefined)
     setInput('')
     setMenuOpen(false)
-    inputRef.current?.focus()
+    if (window.matchMedia?.('(max-width: 760px)').matches) {
+      if (composerOpen) closeComposer()
+      else composerToggleRef.current?.focus({ preventScroll: true })
+    } else {
+      inputRef.current?.focus()
+    }
   }
 
   return (
@@ -644,8 +665,22 @@ function App() {
           )}
         </div>
 
-        <footer className="bottom content-width" hidden={Boolean(study)}>
-          <form className={pendingReply ? 'composer is-waiting' : 'composer'} onSubmit={event => { event.preventDefault(); ask(input) }}>
+        <footer className={`bottom content-width${composerOpen ? ' mobile-compose-open' : ''}`} hidden={Boolean(study)}>
+          <button
+            ref={composerToggleRef}
+            className={`composer-toggle${pendingReply ? ' is-waiting' : ''}`}
+            type="button"
+            aria-expanded={composerOpen}
+            aria-controls="portfolio-composer"
+            onClick={openComposer}
+          >
+            <PenLine size={17} aria-hidden="true" /> {input.trim() ? 'Continue typing' : 'Type a question'}
+          </button>
+          <form
+            id="portfolio-composer"
+            className={pendingReply ? 'composer is-waiting' : 'composer'}
+            onSubmit={event => { event.preventDefault(); ask(input) }}
+          >
             <textarea
               ref={inputRef}
               aria-label="Ask about the portfolio"
@@ -658,6 +693,7 @@ function App() {
             />
             <div className="composer-toolbar">
               <span className="composer-hint">Shift + Enter for a new line</span>
+              <button className="composer-close" type="button" aria-label="Close composer" onClick={closeComposer}><X size={17} /></button>
               <button type="submit" disabled={!input.trim()} aria-label="Send message"><ArrowUp size={19} /></button>
             </div>
           </form>
