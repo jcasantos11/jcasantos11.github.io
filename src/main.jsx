@@ -82,7 +82,7 @@ function TypingSummary({ text, hasDetails, onComplete }) {
   return <span className="typing-summary" aria-hidden="true">{text.slice(0, visibleCount)}</span>
 }
 
-function ReplyDetails({ isTyping, children }) {
+function ReplyDetails({ isTyping, onPresent, children }) {
   const detailsRef = useRef(null)
   const wasTyping = useRef(isTyping)
 
@@ -93,13 +93,21 @@ function ReplyDetails({ isTyping, children }) {
 
     const entries = detailsRef.current.querySelectorAll('.email-question, dl > div, ul > li')
     const stagger = 560 / Math.max(1, entries.length - 1)
-    const animations = Array.from(entries, (entry, index) => entry.animate?.(
-      [{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'translateY(0)' }],
-      { duration: 420, delay: index * Math.min(125, stagger), easing: 'ease-out', fill: 'backwards' },
-    ))
+    const animations = Array.from(entries, (entry, index) => {
+      const delay = index * Math.min(125, stagger)
+      const animation = entry.animate?.(
+        [{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'translateY(0)' }],
+        { duration: 420, delay, easing: 'ease-out', fill: 'backwards' },
+      )
+      const timer = window.setTimeout(() => onPresent(entry, 'smooth'), delay)
+      return { animation, timer }
+    })
 
-    return () => animations.forEach(animation => animation?.cancel())
-  }, [isTyping])
+    return () => animations.forEach(({ animation, timer }) => {
+      animation?.cancel()
+      window.clearTimeout(timer)
+    })
+  }, [isTyping, onPresent])
 
   return <div ref={detailsRef} hidden={isTyping}>{children}</div>
 }
@@ -113,6 +121,15 @@ function App() {
   const [theme, setTheme] = useState(initialTheme)
   const inputRef = useRef(null)
   const viewportRef = useRef(null)
+  const followReply = useRef(false)
+  const presentEntry = React.useCallback((entry, behavior = 'instant') => {
+    const viewport = viewportRef.current
+    if (!followReply.current || entry.closest('.exchange') !== viewport.querySelector('.exchange:last-child')) return
+
+    const { bottom } = viewport.getBoundingClientRect()
+    const distance = entry.getBoundingClientRect().bottom - bottom + 16
+    if (distance > 0) viewport.scrollBy({ top: distance, behavior })
+  }, [])
   const [study, setStudy] = useState(currentCaseStudy)
   const studyHeading = useRef(null)
   const sidebarJump = useRef(null)
@@ -127,6 +144,7 @@ function App() {
   useEffect(() => {
     document.title = study ? `${study.name} | Jose Carlos Santos` : 'Jose Carlos Santos | Software Engineering Portfolio'
     if (study) {
+      followReply.current = false
       setTypingReply(null)
       studyHeading.current?.focus({ preventScroll: true })
     }
@@ -146,6 +164,16 @@ function App() {
     const exchangeTop = exchange.getBoundingClientRect().top - viewport.getBoundingClientRect().top
     viewport.scrollTop = Math.min(viewport.scrollTop + exchangeTop, viewport.scrollHeight - viewport.clientHeight)
   }, [messages, study])
+
+  useEffect(() => {
+    if (!typingReply || study || typeof ResizeObserver === 'undefined') return
+    const paragraph = viewportRef.current.querySelector('.exchange:last-child .reply-body > p')
+    if (!paragraph) return
+
+    const observer = new ResizeObserver(() => presentEntry(paragraph))
+    observer.observe(paragraph)
+    return () => observer.disconnect()
+  }, [typingReply, study, presentEntry])
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -172,6 +200,7 @@ function App() {
     if (study) window.location.hash = ''
     const reply = { text, topic: answerTopic }
     const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    followReply.current = !reduceMotion
     setTypingReply(reduceMotion ? null : reply)
     setMessages(current => [...current, reply])
     setActiveTopic(answerTopic?.id)
@@ -188,6 +217,7 @@ function App() {
       return
     }
 
+    stopFollowingReply()
     setActiveTopic(topic.id)
     setMenuOpen(false)
     if (study) {
@@ -200,6 +230,13 @@ function App() {
     if (exchange) viewport.scrollTop += exchange.getBoundingClientRect().top - viewport.getBoundingClientRect().top
   }
 
+  function stopFollowingReply() {
+    if (!followReply.current) return
+    followReply.current = false
+    const viewport = viewportRef.current
+    viewport.scrollTo({ top: viewport.scrollTop, behavior: 'instant' })
+  }
+
   function handleComposerKeyDown(event) {
     if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
       event.preventDefault()
@@ -209,6 +246,7 @@ function App() {
 
   function reset() {
     if (study) window.location.hash = ''
+    stopFollowingReply()
     setMessages([])
     setTypingReply(null)
     setActiveTopic(undefined)
@@ -278,7 +316,23 @@ function App() {
           </div>
         </header>
 
-        <div className="viewport" ref={viewportRef} tabIndex={0} role="region" aria-label={study ? 'Case study' : 'Chat'}>
+        <div
+          className="viewport"
+          ref={viewportRef}
+          tabIndex={0}
+          role="region"
+          aria-label={study ? 'Case study' : 'Chat'}
+          onWheel={stopFollowingReply}
+          onTouchMove={stopFollowingReply}
+          onPointerDown={event => {
+            if (event.target === event.currentTarget) stopFollowingReply()
+          }}
+          onKeyDown={event => {
+            if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) {
+              stopFollowingReply()
+            }
+          }}
+        >
           {study ? <CaseStudy study={study} headingRef={studyHeading} /> : messages.length === 0 ? (
             <section className="welcome content-width" aria-labelledby="welcome-title">
               <div className="hero-art" aria-hidden="true">
@@ -330,7 +384,7 @@ function App() {
                             ? <TypingSummary text={summary} hasDetails={Boolean(topic?.details || topic?.websites?.length)} onComplete={finishTyping} />
                             : <span aria-hidden="true">{summary}</span>}
                         </p>
-                        <ReplyDetails isTyping={isTyping}>
+                        <ReplyDetails isTyping={isTyping} onPresent={presentEntry}>
                           {!topic && (
                             <a className="email-question" href={`mailto:${profile.email}?subject=${encodeURIComponent('Portfolio question')}&body=${encodeURIComponent(text)}`}>
                               <Mail size={16} aria-hidden="true" /> Email this question to JC
