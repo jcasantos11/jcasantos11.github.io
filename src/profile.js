@@ -6,7 +6,7 @@ export const profile = {
   firstName: 'JC',
   initials: 'JC',
   role: 'Senior Software Engineer',
-  location: 'Cainta, Rizal, Philippines',
+  location: 'Philippines',
   email: 'jcasantos11@gmail.com',
   resume: 'JC_Santos_Resume.pdf',
 }
@@ -20,7 +20,7 @@ export const topics = [
     prompt: 'Tell me about yourself',
     description: 'Background and what I do',
     keywords: /\b(?:about (?:you|jc)\b|yourself|background|intro(?:duction)?|location|where (?:are you|is jc) (?:from|based)|who (?:are you|is jc))\b|^(?:hi|hello|hey)[.!?]*$/i,
-    summary: 'I’m Jose Carlos Santos, a senior software engineer based in Cainta, Rizal, Philippines. I build full-stack web applications, internal business systems, and eCommerce sites. My work spans PHP and Laravel development, WordPress, Shopify, and integrations for organizations in the Philippines, Australia, the United States, and the United Kingdom.',
+    summary: `I’m Jose Carlos Santos, a senior software engineer based in the ${profile.location}. I build full-stack web applications, internal business systems, and eCommerce sites. My work spans PHP and Laravel development, WordPress, Shopify, and integrations for organizations in the Philippines, Australia, the United States, and the United Kingdom.`,
   },
   {
     id: 'experience',
@@ -139,7 +139,7 @@ export const faqTopics = [
     label: 'Location',
     prompt: 'Where are you located?',
     keywords: /\b(?:location|where (?:are you|is jc)(?: currently)? (?:located|based|from)|where do you live|what (?:city|country|time\s?zone)|where in the philippines)\b|^where are you[?.!]*$/i,
-    summary: `I’m based in ${profile.location}, on Philippine Time (UTC+8).`,
+    summary: `I’m based in the ${profile.location}, on Philippine Time (UTC+8).`,
   },
   {
     id: 'remote',
