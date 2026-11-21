@@ -98,19 +98,19 @@ function App() {
       <aside className={menuOpen ? 'sidebar open' : 'sidebar'} id="navigation">
         <div className="brand">
           <span className="brand-icon"><MessageCircle size={19} /></span>
-          <span>Portfolio<span className="brand-accent">Chat</span></span>
+          <span className="brand-name">Portfolio<span className="brand-accent">Chat</span></span>
           <button className="icon-button mobile-close" onClick={() => setMenuOpen(false)} aria-label="Close navigation"><X size={20} /></button>
         </div>
-        <button className="new-chat" onClick={reset}><Plus size={18} /> New chat</button>
+        <button className="new-chat" onClick={reset} aria-label="New chat" title={sidebarCollapsed ? 'New chat' : undefined}><Plus size={18} /><span>New chat</span></button>
         <nav aria-label="Portfolio topics">
           <h2>Explore</h2>
           {topics.map(topic => {
             const Icon = icons[topic.id]
-            return <button key={topic.id} aria-current={activeTopic === topic.id ? 'true' : undefined} onClick={() => ask(topic.prompt, topic)}><Icon size={17} />{topic.label}</button>
+            return <button key={topic.id} aria-label={topic.label} title={sidebarCollapsed ? topic.label : undefined} aria-current={activeTopic === topic.id ? 'true' : undefined} onClick={() => ask(topic.prompt, topic)}><Icon size={17} /><span>{topic.label}</span></button>
           })}
         </nav>
         <details className="profile">
-          <summary aria-label="Contact and location">
+          <summary aria-label="Contact and location" title={sidebarCollapsed ? 'Contact and location' : undefined}>
             <span className="avatar">{profile.initials}</span>
             <span className="profile-identity"><strong>{profile.name}</strong><span>{profile.role}</span></span>
             <ChevronUp className="profile-chevron" size={15} aria-hidden="true" />

@@ -161,8 +161,13 @@ nav button[aria-current] svg { color: var(--accent); }
 .topbar-actions { display: flex; align-items: center; gap: 8px; flex: none; }
 .resume-download { gap: 6px; font-weight: 700; font-size: .875rem; }
 @media (min-width: 761px) {
-  .app.sidebar-collapsed { grid-template-columns: minmax(0, 1fr); }
-  .sidebar-collapsed .sidebar { display: none; }
+  .app.sidebar-collapsed { grid-template-columns: 64px minmax(0, 1fr); }
+  .sidebar-collapsed .sidebar { padding-inline: 9px; overflow: visible; z-index: 1; }
+  .sidebar-collapsed :is(.brand-name, .new-chat span, nav h2, nav button span, .profile-identity, .profile-chevron) {
+    display: none;
+  }
+  .sidebar-collapsed :is(.brand, nav button, .profile summary) { justify-content: center; }
+  .sidebar-collapsed .profile-details { inset: auto auto 0 calc(100% + 12px); width: 220px; }
 }
 .profile summary { display: flex; align-items: center; gap: 8px; padding: 6px 4px; border-radius: 8px; cursor: pointer; }
 .profile summary::-webkit-details-marker { display: none; }
