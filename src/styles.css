@@ -178,6 +178,8 @@ nav button[aria-current] svg { color: var(--accent); }
     opacity: 0;
   }
   .sidebar-collapsed nav h2 { visibility: hidden; }
+  .sidebar-collapsed .profile-identity { display: none; }
+  .sidebar-collapsed .profile summary { padding-block: 4px; }
   .sidebar-collapsed :is(.brand, .new-chat, nav button, .profile summary) { justify-content: center; gap: 0; }
   .sidebar-collapsed .profile-details { inset: auto auto 0 calc(100% + 12px); width: 220px; }
   .topbar { position: relative; z-index: 1; }
