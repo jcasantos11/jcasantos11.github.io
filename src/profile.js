@@ -41,14 +41,18 @@ export const topics = [
     label: 'Projects',
     prompt: 'What projects have you built?',
     description: 'Laravel systems and web projects',
-    keywords: /projects?|built|portfolio|case stud|work samples?|payroll|fleet|constructors|logistics|billing|hris|impact|outcomes/i,
+    keywords: /projects?|built|portfolio|case stud|work samples?|payroll|fleet|constructors|logistics|billing|hris|impact|outcomes|pinoy-publiko|news site|multimedia/i,
     summary: 'My projects include Laravel systems for day-to-day operations and websites for organizations and online stores.',
     details: [
       ['HR and payroll system', 'Digitized HR and payroll workflows at SABInc, reducing administrative workload by 40%.'],
       ['Fleet management system', 'Built a fleet management solution at SABInc that reduced repair and maintenance costs by 15%.'],
       ['Philippine Constructors Association', 'Developed the organization’s website.'],
+      ['Pinoypubliko', 'Worked on this WordPress news and multimedia site, including responsive layouts, site updates, and analytics. The site achieved a reported score of 100 in Google PageSpeed Insights.'],
     ],
-    links: [['Philippine Constructors Association website', 'https://philippineconstructors.org/']],
+    links: [
+      ['Philippine Constructors Association website', 'https://philippineconstructors.org/'],
+      ['Pinoypubliko website', 'https://pinoy-publiko.com/'],
+    ],
   },
   {
     id: 'websites',
