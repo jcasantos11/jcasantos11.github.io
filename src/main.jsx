@@ -86,6 +86,29 @@ function App() {
   const [activeTopic, setActiveTopic] = useState(undefined)
 
   useEffect(() => {
+    const loader = document.getElementById('portfolio-loader')
+    if (!loader) return
+
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      loader.remove()
+      return
+    }
+
+    const startedAt = performance.getEntriesByName?.('portfolio-loader')[0]?.startTime ?? 0
+    let removal
+    const fade = window.setTimeout(() => {
+      loader.dataset.ready = ''
+      loader.setAttribute('aria-hidden', 'true')
+      removal = window.setTimeout(() => loader.remove(), 220)
+    }, Math.max(0, 360 - (performance.now() - startedAt)))
+
+    return () => {
+      window.clearTimeout(fade)
+      window.clearTimeout(removal)
+    }
+  }, [])
+
+  useEffect(() => {
     const onHashChange = () => setStudy(currentCaseStudy())
     window.addEventListener('hashchange', onHashChange)
     return () => window.removeEventListener('hashchange', onHashChange)

@@ -6,8 +6,89 @@
     <meta name="theme-color" content="#101016" />
     <meta name="description" content="Explore Jose Carlos Santos’s experience in Laravel, full-stack development, and eCommerce." />
     <title>Jose Carlos Santos | Software Engineering Portfolio</title>
+    <script>
+      try {
+        if (localStorage.getItem('portfolio-theme') === 'light') document.documentElement.dataset.theme = 'light'
+      } catch {}
+      performance.mark('portfolio-loader')
+    </script>
+    <style>
+      #portfolio-loader {
+        --loader-bg: #101016;
+        --loader-glow: #29233e;
+        --loader-text: #f4f2fa;
+        --loader-accent: #bfb0ff;
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: grid;
+        place-items: center;
+        background: radial-gradient(ellipse at center, var(--loader-glow), var(--loader-bg) 58%);
+        color: var(--loader-text);
+        font-family: 'DM Sans', system-ui, sans-serif;
+        text-align: center;
+      }
+      :root[data-theme="light"] #portfolio-loader {
+        --loader-bg: #f9f7ff;
+        --loader-glow: #eee4fb;
+        --loader-text: #231b32;
+        --loader-accent: #57358d;
+      }
+      .loader-emblem {
+        position: relative;
+        display: grid;
+        place-items: center;
+        width: 96px;
+        height: 96px;
+        margin: 0 auto 18px;
+        color: var(--loader-accent);
+      }
+      .loader-emblem::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border: 1px solid color-mix(in srgb, var(--loader-accent) 35%, transparent);
+        border-top: 2px solid var(--loader-accent);
+        border-radius: 50%;
+      }
+      .loader-mark {
+        display: grid;
+        place-items: center;
+        width: 58px;
+        height: 58px;
+        border: 1px solid #9d7dd6;
+        border-radius: 18px;
+        background: linear-gradient(145deg, #7353bd, #402862);
+        color: #f3e9ff;
+        font-size: 32px;
+        box-shadow: 0 0 26px #a880ff45;
+      }
+      .loader-label {
+        margin: 0;
+        font-size: .9rem;
+        font-weight: 700;
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .loader-emblem::before { animation: loader-orbit 1.25s linear infinite; }
+        .loader-mark { animation: loader-float 1.25s ease-in-out infinite alternate; }
+        #portfolio-loader { transition: opacity 220ms ease; }
+      }
+      #portfolio-loader[data-ready] { opacity: 0; pointer-events: none; }
+      @keyframes loader-orbit { to { transform: rotate(360deg); } }
+      @keyframes loader-float { to { transform: translateY(-3px) rotate(-6deg); } }
+    </style>
   </head>
   <body>
+    <div id="portfolio-loader" role="status">
+      <div>
+        <div class="loader-emblem" aria-hidden="true"><span class="loader-mark">✦</span></div>
+        <p class="loader-label">Loading portfolio</p>
+      </div>
+    </div>
+    <noscript>
+      <style>#portfolio-loader { display: none; }</style>
+      <p>Enable JavaScript to use the interactive portfolio.</p>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
