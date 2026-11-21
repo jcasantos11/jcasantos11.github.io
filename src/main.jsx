@@ -420,8 +420,10 @@ function App() {
                             )}
                             {topic?.details && (
                               <dl className={topic.id === 'experience' ? 'experience-timeline' : undefined}>
-                                {topic.details.map(([name, description]) => (
-                                  <div key={name}><dt>{name}</dt><dd>{description}</dd></div>
+                                {topic.details.map(([name, description], index) => (
+                                  <div key={name} style={topic.id === 'experience' ? { '--timeline-pulse-delay': `${index * 190}ms` } : undefined}>
+                                    <dt>{name}</dt><dd>{description}</dd>
+                                  </div>
                                 ))}
                               </dl>
                             )}
@@ -463,7 +465,7 @@ function App() {
         </div>
 
         <footer className="bottom content-width" hidden={Boolean(study)}>
-          <form className="composer" onSubmit={event => { event.preventDefault(); ask(input) }}>
+          <form className={pendingReply ? 'composer is-waiting' : 'composer'} onSubmit={event => { event.preventDefault(); ask(input) }}>
             <textarea
               ref={inputRef}
               aria-label="Ask about the portfolio"
