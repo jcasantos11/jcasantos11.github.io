@@ -556,3 +556,19 @@ nav button[aria-current] svg { color: var(--accent); }
   76% { opacity: 1; }
   100% { transform: translate(60px, -77px) rotate(38deg) scale(.84); color: var(--accent); opacity: 0; }
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  .suggestion-icon svg, .sidebar nav button > svg {
+    transition: transform 200ms cubic-bezier(.2, .75, .35, 1.4);
+  }
+  .suggestion:focus-visible .suggestion-icon svg,
+  .sidebar nav button:focus-visible > svg {
+    transform: translateY(-2px) rotate(-10deg) scale(1.13);
+  }
+}
+@media (prefers-reduced-motion: no-preference) and (hover: hover) {
+  .suggestion:hover .suggestion-icon svg,
+  .sidebar nav button:hover > svg {
+    transform: translateY(-2px) rotate(-10deg) scale(1.13);
+  }
+}
