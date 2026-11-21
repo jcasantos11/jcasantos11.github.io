@@ -161,13 +161,58 @@ nav button[aria-current] svg { color: var(--accent); }
 .topbar-actions { display: flex; align-items: center; gap: 8px; flex: none; }
 .resume-download { gap: 6px; font-weight: 700; font-size: .875rem; }
 @media (min-width: 761px) {
+  .app { transition: grid-template-columns 280ms cubic-bezier(.22, 1, .36, 1); }
+  .sidebar { min-width: 0; transition: padding-inline 280ms cubic-bezier(.22, 1, .36, 1); }
   .app.sidebar-collapsed { grid-template-columns: 64px minmax(0, 1fr); }
-  .sidebar-collapsed .sidebar { padding-inline: 9px; overflow: visible; z-index: 1; }
-  .sidebar-collapsed :is(.brand-name, .new-chat span, nav h2, nav button span, .profile-identity, .profile-chevron) {
-    display: none;
+  .sidebar-collapsed .sidebar { padding-inline: 9px; overflow: visible; z-index: 2; }
+  .sidebar :is(.brand-name, .new-chat span, nav button span, .profile-identity, .profile-chevron) {
+    min-width: 0;
+    max-width: 180px;
+    overflow: hidden;
+    transition: opacity 140ms ease, max-width 280ms cubic-bezier(.22, 1, .36, 1);
   }
-  .sidebar-collapsed :is(.brand, nav button, .profile summary) { justify-content: center; }
+  .sidebar :is(.brand-name, .new-chat span, nav button span) { white-space: nowrap; }
+  .sidebar :is(.new-chat, nav button) svg { flex: none; }
+  .sidebar-collapsed :is(.brand-name, .new-chat span, nav button span, .profile-identity, .profile-chevron) {
+    max-width: 0;
+    opacity: 0;
+  }
+  .sidebar-collapsed nav h2 { visibility: hidden; }
+  .sidebar-collapsed :is(.brand, .new-chat, nav button, .profile summary) { justify-content: center; gap: 0; }
   .sidebar-collapsed .profile-details { inset: auto auto 0 calc(100% + 12px); width: 220px; }
+  .topbar { position: relative; z-index: 1; }
+  :is(.sidebar-collapsed .sidebar, .topbar) [data-tooltip] { position: relative; }
+  :is(.sidebar-collapsed .sidebar, .topbar) [data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    z-index: 2;
+    padding: 6px 10px;
+    border: 1px solid var(--accent-border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--accent);
+    box-shadow: 0 0 16px var(--glow-active);
+    font-size: .8125rem;
+    font-weight: 700;
+    line-height: 1.4;
+    white-space: nowrap;
+    pointer-events: none;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 150ms ease;
+  }
+  .sidebar-collapsed .sidebar [data-tooltip]::after {
+    top: 50%;
+    left: calc(100% + 12px);
+    transform: translateY(-50%);
+  }
+  .topbar [data-tooltip]::after { top: calc(100% + 8px); left: 0; }
+  .topbar-actions [data-tooltip]::after { left: auto; right: 0; }
+  :is(.sidebar-collapsed .sidebar, .topbar) [data-tooltip]:is(:hover, :focus-visible)::after {
+    visibility: visible;
+    opacity: 1;
+  }
+  .sidebar-collapsed .profile[open] summary::after { visibility: hidden; }
 }
 .profile summary { display: flex; align-items: center; gap: 8px; padding: 6px 4px; border-radius: 8px; cursor: pointer; }
 .profile summary::-webkit-details-marker { display: none; }
@@ -233,11 +278,19 @@ nav button[aria-current] svg { color: var(--accent); }
   .composer-hint { display: none; }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .hero-icon { animation: float-hero 4s ease-in-out 1; }
-  .star { animation: twinkle 1.8s ease-in-out 2; }
+  .hero-icon { animation: float-hero 4s ease-in-out infinite; }
+  .star { animation: twinkle 1.8s ease-in-out infinite; }
   .star-right { animation-delay: .25s; }
   .welcome h1, .welcome > p { animation: welcome-in .55s ease-out both; }
   .welcome > p { animation-delay: .12s; }
+}
+@media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
+  .hero-art:hover .hero-emblem { animation: bump-hero 450ms ease-out; }
+}
+@keyframes bump-hero {
+  0%, 100% { transform: translateY(0) scale(1); }
+  38% { transform: translateY(-11px) scale(1.09); }
+  68% { transform: translateY(2px) scale(.98); }
 }
 @keyframes float-hero {
   0%, 100% { transform: translateY(0) rotate(-9deg); }

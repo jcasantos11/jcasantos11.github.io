@@ -117,16 +117,16 @@ function App() {
           <span className="brand-name">Portfolio<span className="brand-accent">Chat</span></span>
           <button className="icon-button mobile-close" onClick={() => setMenuOpen(false)} aria-label="Close navigation"><X size={20} /></button>
         </div>
-        <button className="new-chat" onClick={reset} aria-label="New chat" title={sidebarCollapsed ? 'New chat' : undefined}><Plus size={18} /><span>New chat</span></button>
+        <button className="new-chat" onClick={reset} aria-label="New chat" data-tooltip="New chat"><Plus size={18} /><span>New chat</span></button>
         <nav aria-label="Portfolio topics">
           <h2>Explore</h2>
           {topics.map(topic => {
             const Icon = icons[topic.id]
-            return <button key={topic.id} aria-label={topic.label} title={sidebarCollapsed ? topic.label : undefined} aria-current={activeTopic === topic.id ? 'true' : undefined} onClick={() => openSidebarTopic(topic)}><Icon size={17} /><span>{topic.label}</span></button>
+            return <button key={topic.id} aria-label={topic.label} data-tooltip={topic.label} aria-current={activeTopic === topic.id ? 'true' : undefined} onClick={() => openSidebarTopic(topic)}><Icon size={17} /><span>{topic.label}</span></button>
           })}
         </nav>
         <details className="profile">
-          <summary aria-label="Contact and location" title={sidebarCollapsed ? 'Contact and location' : undefined}>
+          <summary aria-label="Contact and location" data-tooltip="Contact and location">
             <span className="avatar">{profile.initials}</span>
             <span className="profile-identity"><strong>{profile.name}</strong><span>{profile.role}</span></span>
             <ChevronUp className="profile-chevron" size={15} aria-hidden="true" />
@@ -148,7 +148,7 @@ function App() {
               aria-expanded={!sidebarCollapsed}
               aria-controls="navigation"
               aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              data-tooltip={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
               {sidebarCollapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
             </button>
@@ -159,11 +159,11 @@ function App() {
               className="icon-button theme-toggle"
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
-              title={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+              data-tooltip={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
             >
               {theme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}
             </button>
-            <a className="resume-download" href={`${import.meta.env.BASE_URL}${profile.resume}`} download aria-label="Download résumé PDF" title="Download résumé PDF">
+            <a className="resume-download" href={`${import.meta.env.BASE_URL}${profile.resume}`} download aria-label="Download résumé PDF" data-tooltip="Download résumé PDF">
               <FileDown size={17} aria-hidden="true" /><span>Résumé</span>
             </a>
           </div>
@@ -175,7 +175,7 @@ function App() {
               <div className="hero-art" aria-hidden="true">
                 <span className="orbit orbit-outer" /><span className="orbit orbit-inner" />
                 <span className="star star-left">✦</span><span className="star star-right">✧</span>
-                <span className="hero-icon"><Sparkles size={33} strokeWidth={1.65} /></span>
+                <span className="hero-emblem"><span className="hero-icon"><Sparkles size={33} strokeWidth={1.65} /></span></span>
               </div>
               <h1 id="welcome-title">Hi, I’m <span>{profile.firstName}.</span></h1>
               <p>Welcome to my interactive portfolio. Ask me about my work,<br className="desktop-break" /> experience, or the tools I use.</p>
