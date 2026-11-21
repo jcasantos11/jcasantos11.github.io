@@ -16,11 +16,12 @@ function App() {
   const [input, setInput] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const inputRef = useRef(null)
-  const endRef = useRef(null)
+  const viewportRef = useRef(null)
   const activeTopic = messages.at(-1)?.topic?.id
 
   useEffect(() => {
-    if (messages.length) endRef.current?.scrollIntoView({ block: 'end' })
+    const viewport = viewportRef.current
+    viewport.scrollTop = messages.length ? viewport.scrollHeight : 0
   }, [messages])
 
   useEffect(() => {
@@ -87,7 +88,7 @@ function App() {
           </div>
         </header>
 
-        <div className="viewport">
+        <div className="viewport" ref={viewportRef} tabIndex={0} role="region" aria-label="Chat">
           {messages.length === 0 ? (
             <section className="welcome content-width" aria-labelledby="welcome-title">
               <div className="hero-art" aria-hidden="true">
@@ -124,7 +125,6 @@ function App() {
                   </article>
                 </div>
               ))}
-              <div ref={endRef} />
             </section>
           )}
         </div>
