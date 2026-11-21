@@ -412,3 +412,46 @@ nav button[aria-current] svg { color: var(--accent); }
     animation-timing-function: ease-in-out;
   }
 }
+
+.thinking-reply { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: .875rem; }
+.thinking-dots { display: flex; gap: 4px; }
+.thinking-dots i { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
+@media (prefers-reduced-motion: no-preference) {
+  .thinking-dots i { animation: thinking-pulse 540ms ease-in-out infinite alternate; }
+  .thinking-dots i:nth-child(2) { animation-delay: 90ms; }
+  .thinking-dots i:nth-child(3) { animation-delay: 180ms; }
+}
+@keyframes thinking-pulse {
+  from { opacity: .4; transform: translateY(1px); }
+  to { opacity: 1; transform: translateY(-2px); }
+}
+
+.experience-timeline > div {
+  position: relative;
+  padding: 0 0 18px 24px;
+}
+.experience-timeline > div:last-child { padding-bottom: 0; }
+.experience-timeline > div::before {
+  content: '';
+  position: absolute;
+  top: .65em;
+  bottom: -.65em;
+  left: 4px;
+  width: 1px;
+  background: var(--accent-border);
+}
+.experience-timeline > div:last-child::before { display: none; }
+.experience-timeline > div::after {
+  content: '';
+  position: absolute;
+  top: calc(.65em - 4px);
+  left: 0;
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 0 8px var(--glow-active);
+}
+.experience-timeline > div:first-child::after { background: var(--accent); }
+.answer .experience-timeline dd { margin: 4px 0 0; }

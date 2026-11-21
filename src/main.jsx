@@ -89,6 +89,7 @@ const unmatchedSummary = 'I couldn’t match that question to the topics in my p
 function App() {
   const [messages, setMessages] = useState([])
   const pendingPresentation = useRef(null)
+  const [pendingReply, setPendingReply] = useState(null)
   const [input, setInput] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -154,11 +155,13 @@ function App() {
       return
     }
 
-    const exchangeTop = exchange.getBoundingClientRect().top - viewport.getBoundingClientRect().top
-    viewport.scrollTop = Math.min(viewport.scrollTop + exchangeTop, viewport.scrollHeight - viewport.clientHeight)
-    if (pendingPresentation.current !== messages.at(-1)) return
+    const latestReply = messages.at(-1)
+    if (pendingReply === latestReply || pendingPresentation.current !== latestReply) {
+      const exchangeTop = exchange.getBoundingClientRect().top - viewport.getBoundingClientRect().top
+      viewport.scrollTop = Math.min(viewport.scrollTop + exchangeTop, viewport.scrollHeight - viewport.clientHeight)
+      return
+    }
     pendingPresentation.current = null
-    followReply.current = true
 
     const followUps = exchange.querySelector('.follow-ups')
     if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
@@ -182,7 +185,13 @@ function App() {
       animation?.cancel()
       window.clearTimeout(timer)
     })
-  }, [messages, study, presentEntry])
+  }, [messages, pendingReply, study, presentEntry])
+
+  useEffect(() => {
+    if (!pendingReply) return
+    const timer = window.setTimeout(() => setPendingReply(null), 460)
+    return () => window.clearTimeout(timer)
+  }, [pendingReply])
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -230,6 +239,8 @@ function App() {
     if (study) window.location.hash = ''
     const reply = { text, topic: answerTopic }
     pendingPresentation.current = reply
+    followReply.current = true
+    setPendingReply(reply)
     setMessages(current => [...current, reply])
     setActiveTopic(answerTopic?.id)
     setInput('')
@@ -263,6 +274,7 @@ function App() {
     if (study) window.location.hash = ''
     stopFollowingReply()
     setMessages([])
+    setPendingReply(null)
     pendingPresentation.current = null
     setActiveTopic(undefined)
     setInput('')
@@ -384,51 +396,65 @@ function App() {
             <section className="conversation content-width" role="log" aria-label="Portfolio conversation">
               {messages.map((reply, index) => {
                 const { text, topic } = reply
+                const isThinking = pendingReply === reply
                 const summary = topic?.summary ?? unmatchedSummary
                 return (
                   <div className="exchange" key={index}>
                     <p className="question">{text}</p>
                     <article className="answer">
                       <span className="answer-icon" aria-hidden="true"><Sparkles size={17} /></span>
-                      <div className="answer-body reply-body">
-                        <h2>{topic?.label ?? 'Portfolio assistant'}</h2>
-                        <p>{summary}</p>
-                        <div>
-                          {!topic && (
-                            <a className="email-question" href={`mailto:${profile.email}?subject=${encodeURIComponent('Portfolio question')}&body=${encodeURIComponent(text)}`}>
-                              <Mail size={16} aria-hidden="true" /> Email this question to JC
-                            </a>
-                          )}
-                          {topic?.details && <dl>{topic.details.map(([name, description]) => <div key={name}><dt>{name}</dt><dd>{description}</dd></div>)}</dl>}
-                          {topic?.websites?.length > 0 && (
-                            <ul className="website-grid">
-                              {topic.websites.map(site => (
-                                <li key={site.url}>
-                                  <a href={site.url} target="_blank" rel="noopener noreferrer">
-                                    {site.image && <img src={`${import.meta.env.BASE_URL}images/${site.image}`} alt="" loading="lazy" />}
-                                    <div>
-                                      <h3>{site.name}</h3>
-                                      <span>{site.platform}{site.archived ? ' · Archived screenshot' : ''}</span>
-                                      <p>{site.description}</p>
-                                    </div>
-                                  </a>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                          {topic?.caseStudies?.length > 0 && (
-                            <ul className="answer-links">{topic.caseStudies.map(item => <li key={item.slug}><a href={caseStudyHref(item)}>{item.name} case study</a></li>)}</ul>
-                          )}
-                          {topic?.links && <ul className="answer-links">{topic.links.map(([label, href]) => <li key={href}><a href={href}>{label}</a></li>)}</ul>}
+                      {isThinking ? (
+                        <div className="answer-body thinking-reply" role="status">
+                          Thinking…
+                          <span className="thinking-dots" aria-hidden="true"><i /><i /><i /></span>
                         </div>
-                      </div>
+                      ) : (
+                        <div className="answer-body reply-body">
+                          <h2>{topic?.label ?? 'Portfolio assistant'}</h2>
+                          <p>{summary}</p>
+                          <div>
+                            {!topic && (
+                              <a className="email-question" href={`mailto:${profile.email}?subject=${encodeURIComponent('Portfolio question')}&body=${encodeURIComponent(text)}`}>
+                                <Mail size={16} aria-hidden="true" /> Email this question to JC
+                              </a>
+                            )}
+                            {topic?.details && (
+                              <dl className={topic.id === 'experience' ? 'experience-timeline' : undefined}>
+                                {topic.details.map(([name, description]) => (
+                                  <div key={name}><dt>{name}</dt><dd>{description}</dd></div>
+                                ))}
+                              </dl>
+                            )}
+                            {topic?.websites?.length > 0 && (
+                              <ul className="website-grid">
+                                {topic.websites.map(site => (
+                                  <li key={site.url}>
+                                    <a href={site.url} target="_blank" rel="noopener noreferrer">
+                                      {site.image && <img src={`${import.meta.env.BASE_URL}images/${site.image}`} alt="" loading="lazy" />}
+                                      <div>
+                                        <h3>{site.name}</h3>
+                                        <span>{site.platform}{site.archived ? ' · Archived screenshot' : ''}</span>
+                                        <p>{site.description}</p>
+                                      </div>
+                                    </a>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                            {topic?.caseStudies?.length > 0 && (
+                              <ul className="answer-links">{topic.caseStudies.map(item => <li key={item.slug}><a href={caseStudyHref(item)}>{item.name} case study</a></li>)}</ul>
+                            )}
+                            {topic?.links && <ul className="answer-links">{topic.links.map(([label, href]) => <li key={href}><a href={href}>{label}</a></li>)}</ul>}
+                          </div>
+                        </div>
+                      )}
                     </article>
-                    <div className="follow-ups" role="group" aria-label="Suggested follow-up questions">
+                    {!isThinking && <div className="follow-ups" role="group" aria-label="Suggested follow-up questions">
                       {(followUps[topic?.category ?? topic?.id] ?? followUps.about).map(id => {
                         const suggestion = topics.find(item => item.id === id)
                         return <button key={id} onClick={() => ask(suggestion.prompt, suggestion)}>{suggestion.prompt}</button>
                       })}
-                    </div>
+                    </div>}
                   </div>
                 )
               })}
