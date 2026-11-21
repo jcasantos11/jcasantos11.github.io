@@ -11,6 +11,8 @@ export const profile = {
   resume: 'JC_Santos_Resume.pdf',
 }
 
+export const workEmailHref = `mailto:${profile.email}?subject=${encodeURIComponent('Let’s build something together')}`
+
 export const topics = [
   {
     id: 'about',
@@ -94,11 +96,12 @@ export const topics = [
   {
     id: 'contact',
     label: 'Contact',
+    heading: 'Let’s work together',
     prompt: 'How can I get in touch?',
     description: 'Contact details and links',
     keywords: /contact|email|reach|get in touch|hire/i,
-    summary: 'You can reach me by email to discuss software engineering roles or projects.',
-    links: [['Email JC', `mailto:${profile.email}`]],
+    summary: 'I’d love to hear what you’re working on. If you’re hiring a software engineer, building a Laravel app, or improving a WordPress or Shopify site, tell me a little about the role or project and what you’d like to accomplish.',
+    action: { label: 'Start a conversation', href: workEmailHref },
   },
 ]
 

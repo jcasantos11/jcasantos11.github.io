@@ -521,3 +521,5 @@ nav button[aria-current] svg { color: var(--accent); }
   transition: box-shadow 180ms ease;
 }
 .work-cta:hover { box-shadow: 0 0 22px var(--glow-active); }
+
+.contact-cta { margin: 14px 0 0; }

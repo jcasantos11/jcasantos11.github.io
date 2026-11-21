@@ -5,7 +5,7 @@ import {
   ArrowLeft, ArrowUp, BriefcaseBusiness, ChevronRight, CodeXml, FolderOpen, Globe, GraduationCap, Mail, MapPin, Menu, Moon, PanelLeftClose, PanelLeftOpen, FileDown, Sun, ChevronUp,
   MessageCircle, Plus, Sparkles, UserRound, X,
 } from 'lucide-react'
-import { findEmployerTopic, profile, topics } from './profile'
+import { findEmployerTopic, profile, topics, workEmailHref } from './profile'
 import { caseStudies } from './case-studies'
 import './styles.css'
 
@@ -169,7 +169,7 @@ function App() {
       return
     }
 
-    const entries = exchange.querySelectorAll('.reply-body > p, .email-question, dl > div, .reply-body li, .follow-ups')
+    const entries = exchange.querySelectorAll('.reply-body > p, .email-question, .contact-cta, dl > div, .reply-body li, .follow-ups')
     const stagger = Math.min(120, 650 / Math.max(1, entries.length - 1))
     const presentation = Array.from(entries, (entry, index) => {
       const delay = index * stagger
@@ -369,7 +369,7 @@ function App() {
               </div>
               <h1 id="welcome-title">Hi, I’m <span>{profile.firstName}.</span></h1>
               <p>Welcome to my interactive portfolio. Ask me about my work,<br className="desktop-break" /> experience, or the tools I use.</p>
-              <a className="work-cta" href={`mailto:${profile.email}?subject=${encodeURIComponent('Let’s build something together')}`}>
+              <a className="work-cta" href={workEmailHref}>
                 <Mail size={17} aria-hidden="true" /> Work with me
               </a>
               <section className="featured-projects" aria-labelledby="featured-heading">
@@ -413,7 +413,7 @@ function App() {
                         </div>
                       ) : (
                         <div className="answer-body reply-body">
-                          <h2>{topic?.label ?? 'Portfolio assistant'}</h2>
+                          <h2>{topic?.heading ?? topic?.label ?? 'Portfolio assistant'}</h2>
                           <p>{summary}</p>
                           <div>
                             {!topic && (
@@ -451,6 +451,11 @@ function App() {
                             )}
                             {topic?.caseStudies?.length > 0 && (
                               <ul className="answer-links">{topic.caseStudies.map(item => <li key={item.slug}><a href={caseStudyHref(item)}>{item.name} case study</a></li>)}</ul>
+                            )}
+                            {topic?.action && (
+                              <a className="work-cta contact-cta" href={topic.action.href}>
+                                <Mail size={17} aria-hidden="true" /> {topic.action.label}
+                              </a>
                             )}
                             {topic?.links && <ul className="answer-links">{topic.links.map(([label, href]) => <li key={href}><a href={href}>{label}</a></li>)}</ul>}
                           </div>
