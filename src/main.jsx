@@ -4,7 +4,8 @@ import {
   ArrowUp, BriefcaseBusiness, ChevronRight, CodeXml, FolderOpen, Globe, GraduationCap, Mail, MapPin, Menu, Moon, PanelLeftClose, PanelLeftOpen, FileDown, Sun, ChevronUp,
   MessageCircle, Plus, Sparkles, UserRound, X,
 } from 'lucide-react'
-import { profile, topics } from './profile'
+import { findEmployerTopic, profile, topics } from './profile'
+import { caseStudies } from './case-studies'
 import './styles.css'
 
 const icons = { about: UserRound, experience: BriefcaseBusiness, projects: FolderOpen, websites: Globe, skills: CodeXml, education: GraduationCap, contact: Mail }
@@ -29,6 +30,29 @@ function initialTheme() {
   }
 }
 
+const caseStudyHref = study => `#projects/${study.slug}`
+
+function currentCaseStudy() {
+  return caseStudies.find(study => caseStudyHref(study) === window.location.hash)
+}
+
+function CaseStudy({ study, headingRef }) {
+  return (
+    <article className="case-study content-width">
+      <a className="case-link" href="#">Back to portfolio chat</a>
+      <p className="case-context">{study.context}</p>
+      <h1 ref={headingRef} tabIndex={-1}>{study.name}</h1>
+      <p className="case-outcome"><strong>{study.metric}</strong> {study.outcome}</p>
+      {study.image && <img src={`${import.meta.env.BASE_URL}images/${study.image}`} alt="Pinoypubliko home page" />}
+      <section><h2>Problem</h2><p>{study.problem}</p></section>
+      <section><h2>My role</h2><p>{study.role}</p></section>
+      <section><h2>What I built</h2><p>{study.implementation}</p></section>
+      <section><h2>Result</h2><p>{study.result}</p></section>
+      {study.links && <ul className="answer-links">{study.links.map(([label, href]) => <li key={href}><a href={href}>{label}</a></li>)}</ul>}
+    </article>
+  )
+}
+
 function App() {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
@@ -37,11 +61,28 @@ function App() {
   const [theme, setTheme] = useState(initialTheme)
   const inputRef = useRef(null)
   const viewportRef = useRef(null)
+  const [study, setStudy] = useState(currentCaseStudy)
+  const studyHeading = useRef(null)
+  const sidebarJump = useRef(null)
   const [activeTopic, setActiveTopic] = useState(undefined)
 
   useEffect(() => {
+    const onHashChange = () => setStudy(currentCaseStudy())
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [])
+
+  useEffect(() => {
+    document.title = study ? `${study.name} | Jose Carlos Santos` : 'Jose Carlos Santos | Software Engineering Portfolio'
+    if (study) studyHeading.current?.focus({ preventScroll: true })
+  }, [study])
+
+  useEffect(() => {
     const viewport = viewportRef.current
-    const exchange = viewport.querySelector('.exchange:last-child')
+    const exchange = sidebarJump.current === null
+      ? viewport.querySelector('.exchange:last-child')
+      : viewport.querySelectorAll('.exchange')[sidebarJump.current]
+    sidebarJump.current = null
     if (!exchange) {
       viewport.scrollTop = 0
       return
@@ -49,7 +90,7 @@ function App() {
 
     const exchangeTop = exchange.getBoundingClientRect().top - viewport.getBoundingClientRect().top
     viewport.scrollTop = Math.min(viewport.scrollTop + exchangeTop, viewport.scrollHeight - viewport.clientHeight)
-  }, [messages])
+  }, [messages, study])
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -72,7 +113,8 @@ function App() {
   function ask(question, topic) {
     const text = question.trim()
     if (!text) return
-    const answerTopic = topic ?? searchableTopics.find(item => item.keywords.test(text))
+    const answerTopic = topic ?? findEmployerTopic(text) ?? searchableTopics.find(item => item.keywords.test(text))
+    if (study) window.location.hash = ''
     setMessages(current => [...current, { text, topic: answerTopic }])
     setActiveTopic(answerTopic?.id)
     setInput('')
@@ -88,6 +130,11 @@ function App() {
 
     setActiveTopic(topic.id)
     setMenuOpen(false)
+    if (study) {
+      sidebarJump.current = index
+      window.location.hash = ''
+      return
+    }
     const viewport = viewportRef.current
     const exchange = viewport.querySelectorAll('.exchange')[index]
     if (exchange) viewport.scrollTop += exchange.getBoundingClientRect().top - viewport.getBoundingClientRect().top
@@ -101,6 +148,7 @@ function App() {
   }
 
   function reset() {
+    if (study) window.location.hash = ''
     setMessages([])
     setActiveTopic(undefined)
     setInput('')
@@ -169,8 +217,8 @@ function App() {
           </div>
         </header>
 
-        <div className="viewport" ref={viewportRef} tabIndex={0} role="region" aria-label="Chat">
-          {messages.length === 0 ? (
+        <div className="viewport" ref={viewportRef} tabIndex={0} role="region" aria-label={study ? 'Case study' : 'Chat'}>
+          {study ? <CaseStudy study={study} headingRef={studyHeading} /> : messages.length === 0 ? (
             <section className="welcome content-width" aria-labelledby="welcome-title">
               <div className="hero-art" aria-hidden="true">
                 <span className="orbit orbit-outer" /><span className="orbit orbit-inner" />
@@ -179,6 +227,18 @@ function App() {
               </div>
               <h1 id="welcome-title">Hi, I’m <span>{profile.firstName}.</span></h1>
               <p>Welcome to my interactive portfolio. Ask me about my work,<br className="desktop-break" /> experience, or the tools I use.</p>
+              <section className="featured-projects" aria-labelledby="featured-heading">
+                <h2 id="featured-heading">Featured projects</h2>
+                <div className="featured-grid">
+                  {caseStudies.map(item => (
+                    <a key={item.slug} href={caseStudyHref(item)}>
+                      <strong>{item.metric}</strong>
+                      <span>{item.name}</span>
+                      <small>{item.outcome}</small>
+                    </a>
+                  ))}
+                </div>
+              </section>
               <div className="suggestions">
                 {topics.filter(topic => ['experience', 'projects', 'websites', 'skills'].includes(topic.id)).map(topic => {
                   const Icon = icons[topic.id]
@@ -206,7 +266,7 @@ function App() {
                         </a>
                       )}
                       {topic?.details && <dl>{topic.details.map(([name, description]) => <div key={name}><dt>{name}</dt><dd>{description}</dd></div>)}</dl>}
-                      {topic?.websites && (
+                      {topic?.websites?.length > 0 && (
                         <ul className="website-grid">
                           {topic.websites.map(site => (
                             <li key={site.url}>
@@ -222,11 +282,14 @@ function App() {
                           ))}
                         </ul>
                       )}
+                      {topic?.caseStudies?.length > 0 && (
+                        <ul className="answer-links">{topic.caseStudies.map(item => <li key={item.slug}><a href={caseStudyHref(item)}>{item.name} case study</a></li>)}</ul>
+                      )}
                       {topic?.links && <ul className="answer-links">{topic.links.map(([label, href]) => <li key={href}><a href={href}>{label}</a></li>)}</ul>}
                     </div>
                   </article>
                   <div className="follow-ups" role="group" aria-label="Suggested follow-up questions">
-                    {(followUps[topic?.id] ?? followUps.about).map(id => {
+                    {(followUps[topic?.category ?? topic?.id] ?? followUps.about).map(id => {
                       const suggestion = topics.find(item => item.id === id)
                       return <button key={id} onClick={() => ask(suggestion.prompt, suggestion)}>{suggestion.prompt}</button>
                     })}
@@ -237,7 +300,7 @@ function App() {
           )}
         </div>
 
-        <footer className="bottom content-width">
+        <footer className="bottom content-width" hidden={Boolean(study)}>
           <form className="composer" onSubmit={event => { event.preventDefault(); ask(input) }}>
             <textarea
               ref={inputRef}

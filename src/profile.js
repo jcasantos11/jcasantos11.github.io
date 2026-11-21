@@ -1,3 +1,4 @@
+import { caseStudies } from './case-studies.js'
 import { websites } from './websites.js'
 
 export const profile = {
@@ -49,6 +50,7 @@ export const topics = [
       ['Philippine Constructors Association', 'Developed the organization’s website.'],
       ['Pinoypubliko', 'Worked on this WordPress news and multimedia site, including responsive layouts, site updates, and analytics. The site achieved a reported score of 100 in Google PageSpeed Insights.'],
     ],
+    caseStudies,
     links: [
       ['Philippine Constructors Association website', 'https://philippineconstructors.org/'],
       ['Pinoypubliko website', 'https://pinoy-publiko.com/'],
@@ -99,3 +101,30 @@ export const topics = [
     links: [['Email JC', `mailto:${profile.email}`]],
   },
 ]
+
+const employerMatches = [
+  [/gold coast websites|q digital/i, []],
+  [/kotis(?: design)?/i, ['Kotis Design', 'Kotis Design Swag']],
+  [/sab\s*inc\b/i, [], ['sabinc-payroll', 'sabinc-fleet']],
+  [/novanude/i, ['Novanude']],
+  [/pinoy[- ]?publiko/i, ['Pinoypubliko'], ['pinoypubliko']],
+  [/trustmix/i, []],
+  [/\bpsi\b/i, []],
+]
+const experience = topics.find(topic => topic.id === 'experience')
+
+export function findEmployerTopic(question) {
+  const index = employerMatches.findIndex(([pattern]) => pattern.test(question))
+  if (index < 0) return undefined
+
+  const [, websiteNames, caseStudySlugs = []] = employerMatches[index]
+  const [role, summary] = experience.details[index]
+  return {
+    id: `employer-${index}`,
+    category: experience.id,
+    label: role,
+    summary,
+    websites: websites.filter(site => websiteNames.includes(site.name)),
+    caseStudies: caseStudies.filter(study => caseStudySlugs.includes(study.slug)),
+  }
+}
