@@ -66,7 +66,10 @@ nav { margin-top: 31px; }
 nav h2 { margin: 0 0 10px 11px; color: var(--muted); font-size: .8125rem; font-weight: 700; }
 nav button { display: flex; width: 100%; align-items: center; gap: 11px; border: 0; border-radius: 8px; background: transparent; padding: 11px; font-size: .875rem; color: var(--body-text); text-align: left; }
 nav svg { color: var(--muted); }
-nav button:hover, nav button[aria-current] { background: var(--accent-surface); color: var(--accent); }
+nav button[aria-current] { background: var(--accent-surface); color: var(--accent); }
+@media (hover: hover) and (pointer: fine) {
+  nav button:hover:not([aria-current]) { background: var(--surface); }
+}
 nav button[aria-current] svg { color: var(--accent); }
 .profile { position: relative; padding: 8px 0 0; margin-top: auto; border-top: 1px solid var(--line); }
 .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-surface); color: var(--accent); font-size: .8125rem; font-weight: 800; }
@@ -621,7 +624,7 @@ nav button[aria-current] svg { color: var(--accent); }
 .topic-icon > svg { grid-area: 1 / 1; }
 .topic-icon-mail-open { opacity: 0; }
 
-@media (prefers-reduced-motion: no-preference) {
+@media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
   :is(.suggestion, .sidebar nav button):is(:hover, :focus-visible) .topic-icon[data-topic="about"] circle {
     animation: topic-glance 480ms ease-in-out;
   }
