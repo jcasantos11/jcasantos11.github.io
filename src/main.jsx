@@ -38,6 +38,7 @@ function currentCaseStudy() {
 }
 
 function CaseStudy({ study, headingRef }) {
+  const imageDialog = useRef(null)
   const imageUrl = study.image && `${import.meta.env.BASE_URL}images/${study.image}`
 
   return (
@@ -47,9 +48,32 @@ function CaseStudy({ study, headingRef }) {
       <h1 ref={headingRef} tabIndex={-1}>{study.name}</h1>
       <p className="case-outcome"><strong>{study.metric}</strong> {study.outcome}</p>
       {imageUrl && (
-        <a className="case-image" href={imageUrl} target="_blank" rel="noopener noreferrer" aria-label={`Open screenshot at full size: ${study.imageAlt}`}>
-          <img src={imageUrl} alt={study.imageAlt} />
-        </a>
+        <>
+          <button
+            type="button"
+            className="case-image"
+            aria-haspopup="dialog"
+            aria-label={`Enlarge screenshot: ${study.imageAlt}`}
+            onClick={() => imageDialog.current.showModal()}
+          >
+            <img src={imageUrl} alt={study.imageAlt} />
+          </button>
+          <dialog
+            ref={imageDialog}
+            className="case-image-dialog"
+            aria-label="Case study screenshot"
+            onClick={event => {
+              if (event.target === event.currentTarget) event.currentTarget.close()
+            }}
+          >
+            <div className="case-image-panel">
+              <div className="case-image-toolbar">
+                <button type="button" className="icon-button" aria-label="Close screenshot" onClick={() => imageDialog.current.close()}><X size={18} /></button>
+              </div>
+              <img src={imageUrl} alt={study.imageAlt} />
+            </div>
+          </dialog>
+        </>
       )}
       <section><h2>Problem</h2><p>{study.problem}</p></section>
       <section><h2>My role</h2><p>{study.role}</p></section>

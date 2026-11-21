@@ -353,9 +353,53 @@ nav button[aria-current] svg { color: var(--accent); }
 .case-study section p { color: var(--body-text); margin: 0; }
 .case-context { margin: 18px 0 4px; color: var(--muted); }
 .case-link, .case-outcome strong { color: var(--accent); }
-.case-link { text-decoration: underline; text-underline-offset: 3px; }
-.case-image { display: block; border-radius: 12px; }
-.case-study img { display: block; width: 100%; border: 1px solid var(--line); border-radius: 12px; }
+.case-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 6px 12px;
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: .875rem;
+  font-weight: 700;
+}
+.case-link:hover { background: var(--accent-surface); border-color: var(--accent); }
+.case-image {
+  display: block;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  cursor: zoom-in;
+}
+.case-image:hover { border-color: var(--accent); }
+.case-image img { display: block; width: 100%; }
+.case-image-dialog {
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 24px);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--accent-border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: inherit;
+  box-shadow: 0 0 30px var(--glow-active);
+}
+.case-image-dialog::backdrop { background: #08070cbd; }
+.case-image-toolbar { display: flex; justify-content: flex-end; padding: 6px; }
+.case-image-toolbar button { display: inline-flex; }
+.case-image-panel img {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100dvh - 76px);
+  object-fit: contain;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .case-image-dialog[open] { animation: welcome-in 180ms ease-out; }
+}
 @media (max-width: 480px) {
   .featured-grid { grid-template-columns: 1fr; }
 }
