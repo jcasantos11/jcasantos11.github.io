@@ -409,8 +409,8 @@ nav button[aria-current] svg { color: var(--accent); }
 @media (prefers-reduced-motion: no-preference) {
   .case-image-dialog[open] { animation: welcome-in 180ms ease-out; }
 }
-@media (max-width: 480px) {
-  .featured-grid { grid-template-columns: 1fr; }
+@media (max-width: 760px) {
+  .featured-projects { display: none; }
 }
 
 .reply-body { flex: 1; }
