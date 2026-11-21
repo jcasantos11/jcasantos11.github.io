@@ -53,8 +53,38 @@ function CaseStudy({ study, headingRef }) {
   )
 }
 
+const unmatchedSummary = 'I couldn’t match that question to the topics in my portfolio. You can email it to me or try one of the questions below.'
+
+function TypingSummary({ text, hasDetails, onComplete }) {
+  const [visibleCount, setVisibleCount] = useState(2)
+
+  useEffect(() => {
+    const duration = Math.min(hasDetails ? 800 : 1100, Math.max(260, text.length * 9))
+    let frame
+    let startedAt
+
+    function reveal(now) {
+      startedAt ??= now
+      const progress = Math.min(1, (now - startedAt) / duration)
+      if (progress === 1) {
+        onComplete()
+        return
+      }
+
+      setVisibleCount(Math.max(2, Math.floor(text.length * progress)))
+      frame = requestAnimationFrame(reveal)
+    }
+
+    frame = requestAnimationFrame(reveal)
+    return () => cancelAnimationFrame(frame)
+  }, [text, hasDetails, onComplete])
+
+  return <span className="typing-summary" aria-hidden="true">{text.slice(0, visibleCount)}</span>
+}
+
 function App() {
   const [messages, setMessages] = useState([])
+  const [typingReply, setTypingReply] = useState(null)
   const [input, setInput] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -74,7 +104,10 @@ function App() {
 
   useEffect(() => {
     document.title = study ? `${study.name} | Jose Carlos Santos` : 'Jose Carlos Santos | Software Engineering Portfolio'
-    if (study) studyHeading.current?.focus({ preventScroll: true })
+    if (study) {
+      setTypingReply(null)
+      studyHeading.current?.focus({ preventScroll: true })
+    }
   }, [study])
 
   useEffect(() => {
@@ -115,11 +148,16 @@ function App() {
     if (!text) return
     const answerTopic = topic ?? findEmployerTopic(text) ?? searchableTopics.find(item => item.keywords.test(text))
     if (study) window.location.hash = ''
-    setMessages(current => [...current, { text, topic: answerTopic }])
+    const reply = { text, topic: answerTopic }
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    setTypingReply(reduceMotion ? null : reply)
+    setMessages(current => [...current, reply])
     setActiveTopic(answerTopic?.id)
     setInput('')
     setMenuOpen(false)
   }
+
+  const finishTyping = React.useCallback(() => setTypingReply(null), [])
 
   function openSidebarTopic(topic) {
     const index = messages.findLastIndex(message => message.topic?.id === topic.id)
@@ -150,6 +188,7 @@ function App() {
   function reset() {
     if (study) window.location.hash = ''
     setMessages([])
+    setTypingReply(null)
     setActiveTopic(undefined)
     setInput('')
     setMenuOpen(false)
@@ -252,50 +291,62 @@ function App() {
             </section>
           ) : (
             <section className="conversation content-width" role="log" aria-label="Portfolio conversation">
-              {messages.map(({ text, topic }, index) => (
-                <div className="exchange" key={index}>
-                  <p className="question">{text}</p>
-                  <article className="answer">
-                    <span className="answer-icon" aria-hidden="true"><Sparkles size={17} /></span>
-                    <div className="answer-body">
-                      <h2>{topic?.label ?? 'Portfolio assistant'}</h2>
-                      <p>{topic?.summary ?? 'I couldn’t match that question to the topics in my portfolio. You can email it to me or try one of the questions below.'}</p>
-                      {!topic && (
-                        <a className="email-question" href={`mailto:${profile.email}?subject=${encodeURIComponent('Portfolio question')}&body=${encodeURIComponent(text)}`}>
-                          <Mail size={16} aria-hidden="true" /> Email this question to JC
-                        </a>
-                      )}
-                      {topic?.details && <dl>{topic.details.map(([name, description]) => <div key={name}><dt>{name}</dt><dd>{description}</dd></div>)}</dl>}
-                      {topic?.websites?.length > 0 && (
-                        <ul className="website-grid">
-                          {topic.websites.map(site => (
-                            <li key={site.url}>
-                              <a href={site.url} target="_blank" rel="noopener noreferrer">
-                                {site.image && <img src={`${import.meta.env.BASE_URL}images/${site.image}`} alt="" loading="lazy" />}
-                                <div>
-                                  <h3>{site.name}</h3>
-                                  <span>{site.platform}{site.archived ? ' · Archived screenshot' : ''}</span>
-                                  <p>{site.description}</p>
-                                </div>
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                      {topic?.caseStudies?.length > 0 && (
-                        <ul className="answer-links">{topic.caseStudies.map(item => <li key={item.slug}><a href={caseStudyHref(item)}>{item.name} case study</a></li>)}</ul>
-                      )}
-                      {topic?.links && <ul className="answer-links">{topic.links.map(([label, href]) => <li key={href}><a href={href}>{label}</a></li>)}</ul>}
-                    </div>
-                  </article>
-                  <div className="follow-ups" role="group" aria-label="Suggested follow-up questions">
-                    {(followUps[topic?.category ?? topic?.id] ?? followUps.about).map(id => {
-                      const suggestion = topics.find(item => item.id === id)
-                      return <button key={id} onClick={() => ask(suggestion.prompt, suggestion)}>{suggestion.prompt}</button>
-                    })}
+              {messages.map((reply, index) => {
+                const { text, topic } = reply
+                const isTyping = typingReply === reply
+                const summary = topic?.summary ?? unmatchedSummary
+                return (
+                  <div className="exchange" key={index}>
+                    <p className="question">{text}</p>
+                    <article className="answer">
+                      <span className="answer-icon" aria-hidden="true"><Sparkles size={17} /></span>
+                      <div className="answer-body reply-body">
+                        <h2>{topic?.label ?? 'Portfolio assistant'}</h2>
+                        <p>
+                          <span className="screen-reader-text">{summary}</span>
+                          {isTyping
+                            ? <TypingSummary text={summary} hasDetails={Boolean(topic?.details || topic?.websites?.length)} onComplete={finishTyping} />
+                            : <span aria-hidden="true">{summary}</span>}
+                        </p>
+                        <div hidden={isTyping}>
+                          {!topic && (
+                            <a className="email-question" href={`mailto:${profile.email}?subject=${encodeURIComponent('Portfolio question')}&body=${encodeURIComponent(text)}`}>
+                              <Mail size={16} aria-hidden="true" /> Email this question to JC
+                            </a>
+                          )}
+                          {topic?.details && <dl>{topic.details.map(([name, description]) => <div key={name}><dt>{name}</dt><dd>{description}</dd></div>)}</dl>}
+                          {topic?.websites?.length > 0 && (
+                            <ul className="website-grid">
+                              {topic.websites.map(site => (
+                                <li key={site.url}>
+                                  <a href={site.url} target="_blank" rel="noopener noreferrer">
+                                    {site.image && <img src={`${import.meta.env.BASE_URL}images/${site.image}`} alt="" loading="lazy" />}
+                                    <div>
+                                      <h3>{site.name}</h3>
+                                      <span>{site.platform}{site.archived ? ' · Archived screenshot' : ''}</span>
+                                      <p>{site.description}</p>
+                                    </div>
+                                  </a>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                          {topic?.caseStudies?.length > 0 && (
+                            <ul className="answer-links">{topic.caseStudies.map(item => <li key={item.slug}><a href={caseStudyHref(item)}>{item.name} case study</a></li>)}</ul>
+                          )}
+                          {topic?.links && <ul className="answer-links">{topic.links.map(([label, href]) => <li key={href}><a href={href}>{label}</a></li>)}</ul>}
+                        </div>
+                      </div>
+                    </article>
+                    {!isTyping && <div className="follow-ups" role="group" aria-label="Suggested follow-up questions">
+                      {(followUps[topic?.category ?? topic?.id] ?? followUps.about).map(id => {
+                        const suggestion = topics.find(item => item.id === id)
+                        return <button key={id} onClick={() => ask(suggestion.prompt, suggestion)}>{suggestion.prompt}</button>
+                      })}
+                    </div>}
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </section>
           )}
         </div>

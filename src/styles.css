@@ -358,3 +358,22 @@ nav button[aria-current] svg { color: var(--accent); }
 @media (max-width: 480px) {
   .featured-grid { grid-template-columns: 1fr; }
 }
+
+.reply-body { flex: 1; }
+.typing-summary::after {
+  content: '';
+  display: inline-block;
+  width: 2px;
+  height: .9em;
+  margin-left: 2px;
+  vertical-align: -.06em;
+  background: var(--accent);
+}
+.screen-reader-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
