@@ -421,7 +421,10 @@ function App() {
                             {topic?.details && (
                               <dl className={topic.id === 'experience' ? 'experience-timeline' : undefined}>
                                 {topic.details.map(([name, description], index) => (
-                                  <div key={name} style={topic.id === 'experience' ? { '--timeline-pulse-delay': `${index * 190}ms` } : undefined}>
+                                  <div key={name}>
+                                    {topic.id === 'experience' && (
+                                      <span className="timeline-marker" aria-hidden="true" style={{ '--timeline-pulse-delay': `${index * 190}ms` }} />
+                                    )}
                                     <dt>{name}</dt><dd>{description}</dd>
                                   </div>
                                 ))}
