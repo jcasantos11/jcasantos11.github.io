@@ -533,23 +533,26 @@ nav button[aria-current] svg { color: var(--accent); }
   .work-cta-envelope svg { transition: opacity 140ms ease, transform 160ms ease; }
   .work-cta-mail-open { transform: translateY(2px) scale(.86); }
   .work-cta:is(:hover, :focus-visible, .is-launching) .work-cta-mail-open { transform: translateY(-2px) scale(1.08); }
+  .work-cta.is-launching { position: relative; z-index: 1; }
   .work-cta.is-launching .work-cta-envelope {
-    animation: work-email-launch 270ms cubic-bezier(.3, .05, .6, .95) both;
+    animation: work-email-launch 420ms ease-out both;
     filter: drop-shadow(0 0 6px var(--accent));
   }
   .work-cta.is-launching .work-cta-envelope::after {
     content: '';
     position: absolute;
     top: 15px;
-    left: 5px;
-    width: 8px;
-    height: 12px;
+    left: 4px;
+    width: 9px;
+    height: 17px;
     background: linear-gradient(var(--accent), transparent);
     border-radius: 50%;
   }
 }
 @keyframes work-email-launch {
-  0% { transform: translate(0, 0) rotate(0); }
-  24% { transform: translate(-2px, 3px) rotate(9deg) scale(.92); }
-  100% { transform: translate(27px, -35px) rotate(30deg) scale(.7); opacity: 0; }
+  0% { transform: translate(0, 0) rotate(0); color: var(--page); }
+  16% { transform: translate(-2px, 3px) rotate(9deg) scale(.92); color: var(--page); }
+  43% { transform: translate(23px, -34px) rotate(24deg) scale(1.18); color: var(--accent); }
+  76% { opacity: 1; }
+  100% { transform: translate(60px, -77px) rotate(38deg) scale(.84); color: var(--accent); opacity: 0; }
 }

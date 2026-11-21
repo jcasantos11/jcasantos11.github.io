@@ -103,7 +103,7 @@ function WorkEmailLink({ href, children, contact = false }) {
       launchTimer.current = null
       setLaunching(false)
       window.location.href = href
-    }, 280)
+    }, 430)
   }
 
   return (
