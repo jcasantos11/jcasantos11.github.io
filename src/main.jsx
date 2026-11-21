@@ -48,6 +48,57 @@ function currentCaseStudy() {
   return caseStudies.find(study => caseStudyHref(study) === window.location.hash)
 }
 
+function FeaturedMetric({ metric, ready }) {
+  const finalValue = Number.parseInt(metric, 10)
+  const suffix = metric.endsWith('%') ? '%' : ''
+  const [value, setValue] = useState(() =>
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? finalValue : 0,
+  )
+  const metricRef = useRef(null)
+
+  useEffect(() => {
+    if (!ready) return
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      setValue(finalValue)
+      return
+    }
+
+    let frame
+    let startedAt
+    let observer
+    function tick(now) {
+      startedAt ??= now
+      const progress = Math.min(1, (now - startedAt) / 1050)
+      const eased = 1 - (1 - progress) ** 2
+      setValue(Math.floor(finalValue * eased))
+      if (progress < 1) frame = requestAnimationFrame(tick)
+    }
+
+    if (typeof IntersectionObserver === 'undefined') {
+      frame = requestAnimationFrame(tick)
+    } else {
+      observer = new IntersectionObserver(([entry]) => {
+        if (!entry.isIntersecting) return
+        observer.disconnect()
+        frame = requestAnimationFrame(tick)
+      }, { threshold: .25 })
+      observer.observe(metricRef.current)
+    }
+
+    return () => {
+      observer?.disconnect()
+      cancelAnimationFrame(frame)
+    }
+  }, [ready, finalValue])
+
+  return (
+    <>
+      <span className="featured-metric-label">{metric}</span>
+      <strong ref={metricRef} aria-hidden="true">{value}{suffix}</strong>
+    </>
+  )
+}
+
 function CaseStudy({ study, headingRef }) {
   const imageDialog = useRef(null)
   const imageUrl = study.image && `${import.meta.env.BASE_URL}images/${study.image}`
@@ -138,6 +189,7 @@ function WorkEmailLink({ href, children, contact = false, header = false, linkRe
 
 function App() {
   const [messages, setMessages] = useState([])
+  const [portfolioReady, setPortfolioReady] = useState(false)
   const pendingPresentation = useRef(null)
   const [pendingReply, setPendingReply] = useState(null)
   const [input, setInput] = useState('')
@@ -198,10 +250,14 @@ function App() {
 
   useEffect(() => {
     const loader = document.getElementById('portfolio-loader')
-    if (!loader) return
+    if (!loader) {
+      setPortfolioReady(true)
+      return
+    }
 
     if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
       loader.remove()
+      setPortfolioReady(true)
       return
     }
 
@@ -210,7 +266,10 @@ function App() {
     const fade = window.setTimeout(() => {
       loader.dataset.ready = ''
       loader.setAttribute('aria-hidden', 'true')
-      removal = window.setTimeout(() => loader.remove(), 220)
+      removal = window.setTimeout(() => {
+        loader.remove()
+        setPortfolioReady(true)
+      }, 220)
     }, Math.max(0, 360 - (performance.now() - startedAt)))
 
     return () => {
@@ -468,7 +527,7 @@ function App() {
                 <div className="featured-grid">
                   {caseStudies.map(item => (
                     <a key={item.slug} href={caseStudyHref(item)}>
-                      <strong>{item.metric}</strong>
+                      <FeaturedMetric metric={item.metric} ready={portfolioReady} />
                       <span>{item.name}</span>
                       <small>{item.outcome}</small>
                     </a>
