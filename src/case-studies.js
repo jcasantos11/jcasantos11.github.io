@@ -10,6 +10,7 @@ export const caseStudies = [
     implementation: 'I worked in WordPress and used Google Analytics 4 and Meta Business Suite to support reporting and content optimization.',
     result: 'The site achieved a reported Google PageSpeed Insights score of 100.',
     image: 'pinoypubliko.webp',
+    imageAlt: 'Pinoypubliko home page',
     links: [
       ['Visit Pinoypubliko', 'https://pinoy-publiko.com/'],
       ['Run a new PageSpeed Insights test', 'https://pagespeed.web.dev/analysis?url=https%3A%2F%2Fpinoy-publiko.com%2F'],
@@ -25,6 +26,8 @@ export const caseStudies = [
     role: 'As Project Consultant / Software Engineer, I independently designed the application architecture, database schemas, and business logic.',
     implementation: 'I built a Laravel HR and payroll system, worked with operational stakeholders on requirements, and supported training and maintenance.',
     result: 'Digitizing the workflows reduced HR and payroll administrative workload by 40%, as reported in my résumé.',
+    image: 'sabinc-payroll.webp',
+    imageAlt: 'Anupol Trucking HR overview showing biometric imports, attendance review, payroll preparation, and approval',
   },
   {
     slug: 'sabinc-fleet',
@@ -36,5 +39,7 @@ export const caseStudies = [
     role: 'As Project Consultant / Software Engineer, I owned the application architecture, database schemas, and business logic.',
     implementation: 'I developed the Laravel fleet management system and worked with operational stakeholders on implementation, training, and troubleshooting.',
     result: 'The fleet management solution reduced repair and maintenance costs by 15%, as reported in my résumé.',
+    image: 'sabinc-fleet.webp',
+    imageAlt: 'Anupol Trucking fleet dashboard showing vehicle search, maintenance status, and service dates',
   },
 ]

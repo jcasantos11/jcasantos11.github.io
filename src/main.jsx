@@ -37,13 +37,19 @@ function currentCaseStudy() {
 }
 
 function CaseStudy({ study, headingRef }) {
+  const imageUrl = study.image && `${import.meta.env.BASE_URL}images/${study.image}`
+
   return (
     <article className="case-study content-width">
       <a className="case-link" href="#">Back to portfolio chat</a>
       <p className="case-context">{study.context}</p>
       <h1 ref={headingRef} tabIndex={-1}>{study.name}</h1>
       <p className="case-outcome"><strong>{study.metric}</strong> {study.outcome}</p>
-      {study.image && <img src={`${import.meta.env.BASE_URL}images/${study.image}`} alt="Pinoypubliko home page" />}
+      {imageUrl && (
+        <a className="case-image" href={imageUrl} target="_blank" rel="noopener noreferrer" aria-label={`Open screenshot at full size: ${study.imageAlt}`}>
+          <img src={imageUrl} alt={study.imageAlt} />
+        </a>
+      )}
       <section><h2>Problem</h2><p>{study.problem}</p></section>
       <section><h2>My role</h2><p>{study.role}</p></section>
       <section><h2>What I built</h2><p>{study.implementation}</p></section>
