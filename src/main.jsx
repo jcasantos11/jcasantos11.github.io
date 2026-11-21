@@ -170,15 +170,28 @@ function App() {
     if (!link || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
 
     const target = link.getBoundingClientRect()
-    const start = origin && target.width && target.height
-      ? {
-          transform: `translate(${origin.left - target.left}px, ${origin.top - target.top}px) scale(${origin.width / target.width}, ${origin.height / target.height})`,
-        }
-      : { transform: 'translateY(8px)', opacity: 0 }
+    const landing = { transform: 'none', opacity: 1 }
+    let frames = [{ transform: 'translateY(8px)', opacity: 0 }, landing]
+    const canFly = origin && target.width && target.height
+    if (canFly) {
+      const scaleX = Math.min(1.5, origin.width / target.width)
+      const scaleY = origin.height / target.height
+      const x = origin.left - target.left + (origin.width - target.width * scaleX) / 2
+      const y = origin.top - target.top
+      frames = [
+        { transform: `translate(${x}px, ${y}px) scale(${scaleX}, ${scaleY})`, opacity: 1 },
+        {
+          offset: .66,
+          transform: `translate(${x * .33}px, ${y * .34 + 9}px) scale(${1 + (scaleX - 1) * .25}, ${1 + (scaleY - 1) * .25})`,
+          opacity: 1,
+        },
+        landing,
+      ]
+    }
 
     const animation = link.animate?.(
-      [start, { transform: 'none', opacity: 1 }],
-      { duration: origin ? 520 : 220, easing: 'cubic-bezier(.2, .75, .3, 1)' },
+      frames,
+      { duration: canFly ? 680 : 220, easing: 'cubic-bezier(.28, .12, .26, 1)' },
     )
     return () => animation?.cancel()
   }, [hasMessages])
@@ -416,10 +429,10 @@ function App() {
             >
               {theme === 'dark' ? <Sun size={19} /> : <span className="theme-moon" aria-hidden="true"><Moon size={19} /></span>}
             </button>
-            {hasMessages && <WorkEmailLink href={workEmailHref} header linkRef={headerWorkLink}>Work with me</WorkEmailLink>}
             <a className="resume-download" href={`${import.meta.env.BASE_URL}${profile.resume}`} download aria-label="Download résumé PDF" data-tooltip="Download résumé PDF">
               <FileDown size={17} aria-hidden="true" /><span>Résumé</span>
             </a>
+            {hasMessages && <WorkEmailLink href={workEmailHref} header linkRef={headerWorkLink}>Work with me</WorkEmailLink>}
           </div>
         </header>
 
