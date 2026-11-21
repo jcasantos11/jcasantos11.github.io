@@ -187,6 +187,36 @@ function WorkEmailLink({ href, children, contact = false, header = false, linkRe
   )
 }
 
+function WebsiteShowcase({ websites }) {
+  const [index, setIndex] = useState(0)
+  const current = websites[index]
+  const hasMultiple = websites.length > 1
+  const move = step => setIndex(value => (value + step + websites.length) % websites.length)
+
+  return (
+    <section className="website-showcase" aria-label="Website portfolio">
+      {hasMultiple && (
+        <div className="website-controls">
+          <button type="button" onClick={() => move(-1)}>Previous</button>
+          <span aria-live="polite">{index + 1} of {websites.length}</span>
+          <button type="button" onClick={() => move(1)}>Next</button>
+        </div>
+      )}
+      <article className="website-card" key={current.url}>
+        {current.image && (
+          <img src={`${import.meta.env.BASE_URL}images/${current.image}`} alt={`${current.name} website screenshot`} loading="lazy" />
+        )}
+        <div className="website-card-content">
+          <span className="website-platform">{current.platform}{current.archived ? ' · Archived screenshot' : ''}</span>
+          <h3>{current.name}</h3>
+          <p>{current.description}</p>
+          <a className="website-visit" href={current.url} target="_blank" rel="noopener noreferrer">Visit {current.name}</a>
+        </div>
+      </article>
+    </section>
+  )
+}
+
 function App() {
   const [messages, setMessages] = useState([])
   const [portfolioReady, setPortfolioReady] = useState(false)
@@ -314,7 +344,7 @@ function App() {
       return
     }
 
-    const entries = exchange.querySelectorAll('.reply-body > p, .email-question, .contact-cta, dl > div, .reply-body li, .follow-ups')
+    const entries = exchange.querySelectorAll('.reply-body > p, .email-question, .contact-cta, .website-showcase, dl > div, .reply-body li, .follow-ups')
     const stagger = Math.min(120, 650 / Math.max(1, entries.length - 1))
     const presentation = Array.from(entries, (entry, index) => {
       const delay = index * stagger
@@ -436,7 +466,14 @@ function App() {
 
   return (
     <div ref={appRef} className={sidebarCollapsed ? 'app sidebar-collapsed' : 'app'}>
-      {menuOpen && <button className="scrim" onClick={() => setMenuOpen(false)} aria-label="Close navigation" />}
+      <button
+        type="button"
+        className={menuOpen ? 'scrim open' : 'scrim'}
+        onClick={() => setMenuOpen(false)}
+        tabIndex={-1}
+        aria-hidden={!menuOpen}
+        aria-label="Close navigation"
+      />
       <aside className={menuOpen ? 'sidebar open' : 'sidebar'} id="navigation">
         <div className="brand">
           <span className="brand-icon"><MessageCircle size={19} /></span>
@@ -582,22 +619,7 @@ function App() {
                                 ))}
                               </dl>
                             )}
-                            {topic?.websites?.length > 0 && (
-                              <ul className="website-grid">
-                                {topic.websites.map(site => (
-                                  <li key={site.url}>
-                                    <a href={site.url} target="_blank" rel="noopener noreferrer">
-                                      {site.image && <img src={`${import.meta.env.BASE_URL}images/${site.image}`} alt="" loading="lazy" />}
-                                      <div>
-                                        <h3>{site.name}</h3>
-                                        <span>{site.platform}{site.archived ? ' · Archived screenshot' : ''}</span>
-                                        <p>{site.description}</p>
-                                      </div>
-                                    </a>
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
+                            {topic?.websites?.length > 0 && <WebsiteShowcase websites={topic.websites} />}
                             {topic?.caseStudies?.length > 0 && (
                               <ul className="answer-links">{topic.caseStudies.map(item => <li key={item.slug}><a href={caseStudyHref(item)}>{item.name} case study</a></li>)}</ul>
                             )}
