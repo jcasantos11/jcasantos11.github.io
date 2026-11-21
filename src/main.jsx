@@ -414,7 +414,7 @@ function App() {
               aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
               data-tooltip={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
             >
-              {theme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}
+              {theme === 'dark' ? <Sun size={19} /> : <span className="theme-moon" aria-hidden="true"><Moon size={19} /></span>}
             </button>
             {hasMessages && <WorkEmailLink href={workEmailHref} header linkRef={headerWorkLink}>Work with me</WorkEmailLink>}
             <a className="resume-download" href={`${import.meta.env.BASE_URL}${profile.resume}`} download aria-label="Download résumé PDF" data-tooltip="Download résumé PDF">

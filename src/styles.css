@@ -680,3 +680,32 @@ nav button[aria-current] svg { color: var(--accent); }
   35% { opacity: 1; transform: scale(1.2) rotate(8deg); }
   100% { opacity: 0; transform: translateY(-7px) scale(.55) rotate(32deg); }
 }
+
+.theme-moon { position: relative; display: inline-flex; }
+.theme-moon::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -1px;
+  width: 7px;
+  height: 7px;
+  opacity: 0;
+  background: var(--accent);
+  clip-path: polygon(50% 0, 59% 40%, 100% 50%, 59% 60%, 50% 100%, 41% 60%, 0 50%, 41% 40%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .theme-moon { animation: moon-arrival 580ms ease-out; }
+  .theme-moon::after { animation: moon-twinkle 620ms ease-out 100ms; }
+  .theme-moon svg { transition: transform 210ms ease-out; }
+  .theme-toggle:is(:hover, :focus-visible) .theme-moon svg { transform: rotate(-15deg) translateY(-1px); }
+}
+@keyframes moon-arrival {
+  0% { opacity: .45; transform: translateY(3px) rotate(-26deg); }
+  50% { opacity: 1; transform: translateY(-1px) rotate(12deg); }
+  78% { transform: rotate(-5deg); }
+  100% { transform: rotate(0deg); }
+}
+@keyframes moon-twinkle {
+  0%, 100% { opacity: 0; transform: scale(.4) rotate(-18deg); }
+  40% { opacity: 1; transform: scale(1.2) rotate(12deg); }
+}
