@@ -369,6 +369,9 @@ function App() {
               </div>
               <h1 id="welcome-title">Hi, I’m <span>{profile.firstName}.</span></h1>
               <p>Welcome to my interactive portfolio. Ask me about my work,<br className="desktop-break" /> experience, or the tools I use.</p>
+              <a className="work-cta" href={`mailto:${profile.email}?subject=${encodeURIComponent('Let’s build something together')}`}>
+                <Mail size={17} aria-hidden="true" /> Work with me
+              </a>
               <section className="featured-projects" aria-labelledby="featured-heading">
                 <h2 id="featured-heading">Featured projects</h2>
                 <div className="featured-grid">
