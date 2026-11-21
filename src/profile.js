@@ -1,0 +1,83 @@
+export const profile = {
+  name: 'Jose Carlos Santos',
+  firstName: 'JC',
+  initials: 'JC',
+  role: 'Senior Software Engineer',
+}
+
+export const topics = [
+  {
+    id: 'about',
+    label: 'About me',
+    prompt: 'Tell me about yourself',
+    description: 'Background and what I do',
+    keywords: /about|yourself|background|hello|^hi\b|who (?:are|is)|intro|location|based/i,
+    summary: 'I’m Jose Carlos Santos, a senior software engineer based in Cainta, Rizal, Philippines. I build full-stack web applications, internal business systems, and eCommerce sites. My work spans PHP and Laravel development, WordPress, Shopify, and integrations for organizations in the Philippines, Australia, the United States, and the United Kingdom.',
+  },
+  {
+    id: 'experience',
+    label: 'Experience',
+    prompt: 'Walk me through your experience',
+    description: 'Roles and responsibilities',
+    keywords: /experience|career|work(?:ed)? (?:history|at|for)|roles?|jobs?|employers?|resume|résumé|gold coast|q digital|kotis|sabinc|novanude|pinoypubliko|trustmix|\bpsi\b/i,
+    summary: 'I’ve worked across software engineering, WordPress development, web optimization, and eCommerce. Here’s a timeline of my roles.',
+    details: [
+      ['Gold Coast Websites / Q Digital · Oct 2025–Present', 'WordPress Developer. Build responsive WordPress sites, customize WooCommerce, resolve performance issues, and manage deployments and quality checks.'],
+      ['Kotis Design · Nov 2024–Aug 2025', 'Web Optimization & Content Organization. Maintained and optimized the primary WordPress site, led its migration to Elementor, and built reusable HubSpot modules, forms, and automation assets.'],
+      ['SABInc · Apr 2022–Oct 2024', 'Project Consultant / Software Engineer. Independently designed the architecture, database schemas, and business logic for Laravel applications serving approximately 50 users.'],
+      ['Novanude.com · Feb 2023–Jul 2024', 'Shopify Developer. Built storefront features with Shopify Liquid and JavaScript and integrated GA4, Hotjar, Klaviyo, and Meta Business Suite. The work contributed to a reported 25% improvement in site performance and a 15% increase in user engagement.'],
+      ['Pinoypubliko.com · Mar 2021–Apr 2024', 'WordPress Developer & Social Media Administrator. Maintained WordPress content, responsive layouts, site updates, and analytics reporting.'],
+      ['TrustMix.io · Nov 2021–Feb 2022', 'Project Consultant. Implemented responsive Vue.js and Nuxt.js interfaces in an environment using .NET Core and MSSQL.'],
+      ['PSI · Mar 2019–Jan 2020', '.NET Developer. Developed and tested Xamarin mobile applications and supporting web services.'],
+    ],
+  },
+  {
+    id: 'projects',
+    label: 'Projects',
+    prompt: 'What projects have you built?',
+    description: 'Laravel systems and web projects',
+    keywords: /projects?|built|portfolio|case stud|work samples?|payroll|fleet|constructors|logistics|billing|hris|impact|outcomes/i,
+    summary: 'My projects include Laravel systems for day-to-day operations and websites for organizations and online stores.',
+    details: [
+      ['HR and payroll system', 'Digitized HR and payroll workflows at SABInc, reducing administrative workload by 40%.'],
+      ['Fleet management system', 'Built a fleet management solution at SABInc that reduced repair and maintenance costs by 15%.'],
+      ['Philippine Constructors Association', 'Developed the organization’s website.'],
+    ],
+    links: [['Philippine Constructors Association website', 'https://philippineconstructors.org/']],
+  },
+  {
+    id: 'skills',
+    label: 'Skills',
+    prompt: 'What are your technical skills?',
+    description: 'Backend, frontend and operations',
+    keywords: /skills?|tools|technical|framework|stack|languages?|technolog|laravel|php|wordpress|shopify|vue|nuxt|hubspot|codex|claude|database/i,
+    summary: 'My core stack is PHP and Laravel. I also build WordPress and Shopify sites and handle integrations, testing, performance troubleshooting, and deployments.',
+    details: [
+      ['Backend and data', 'PHP, Laravel, Filament, Livewire, MySQL, PostgreSQL, MSSQL, .NET Core, and API integrations.'],
+      ['Frontend and commerce', 'JavaScript, HTML, CSS, Tailwind CSS, Vue.js, Nuxt.js, WordPress, WooCommerce, Shopify Liquid, and HubSpot/HubL.'],
+      ['Engineering and operations', 'PHPUnit, Git, Linux, cPanel, WP Engine, hosting administration, and performance optimization.'],
+      ['Analytics and development tools', 'GA4, Google Tag Manager, PageSpeed Insights, Figma, Ahrefs, SEMrush, OpenAI Codex, and Claude Code.'],
+    ],
+  },
+  {
+    id: 'education',
+    label: 'Education',
+    prompt: 'What did you study?',
+    description: 'Degrees and certifications',
+    keywords: /education|stud(?:y|ied)|degree|university|certif|map[uú]a|six sigma/i,
+    summary: 'I studied Information Technology and Computer Science at Mapúa and earned Lean Six Sigma Yellow Belt and White Belt certifications in October 2025.',
+    details: [
+      ['BS Information Technology · 2014–2018', 'Mapúa University, Java specialization.'],
+      ['BS Computer Science · 2006–2011', 'Mapúa Institute of Technology, UNIX administration specialization.'],
+    ],
+  },
+  {
+    id: 'contact',
+    label: 'Contact',
+    prompt: 'How can I get in touch?',
+    description: 'Contact details and links',
+    keywords: /contact|email|reach|get in touch|hire/i,
+    summary: 'You can reach me by email to discuss software engineering roles or projects.',
+    links: [['Email JC', 'mailto:jcasantos11@gmail.com']],
+  },
+]
