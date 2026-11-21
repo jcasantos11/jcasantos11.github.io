@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import {
   ArrowUp, BriefcaseBusiness, ChevronRight, CodeXml, FolderOpen, Globe, GraduationCap, Mail, MapPin, Menu, Moon, PanelLeftClose, PanelLeftOpen, FileDown, Sun, ChevronUp,
@@ -59,7 +59,7 @@ function TypingSummary({ text, hasDetails, onComplete }) {
   const [visibleCount, setVisibleCount] = useState(2)
 
   useEffect(() => {
-    const duration = Math.min(hasDetails ? 800 : 1100, Math.max(260, text.length * 9))
+    const duration = Math.min(hasDetails ? 1200 : 1650, Math.max(450, text.length * 13))
     let frame
     let startedAt
 
@@ -80,6 +80,28 @@ function TypingSummary({ text, hasDetails, onComplete }) {
   }, [text, hasDetails, onComplete])
 
   return <span className="typing-summary" aria-hidden="true">{text.slice(0, visibleCount)}</span>
+}
+
+function ReplyDetails({ isTyping, children }) {
+  const detailsRef = useRef(null)
+  const wasTyping = useRef(isTyping)
+
+  useLayoutEffect(() => {
+    const justFinished = wasTyping.current && !isTyping
+    wasTyping.current = isTyping
+    if (!justFinished || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+
+    const entries = detailsRef.current.querySelectorAll('.email-question, dl > div, ul > li')
+    const stagger = 560 / Math.max(1, entries.length - 1)
+    const animations = Array.from(entries, (entry, index) => entry.animate?.(
+      [{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'translateY(0)' }],
+      { duration: 420, delay: index * Math.min(125, stagger), easing: 'ease-out', fill: 'backwards' },
+    ))
+
+    return () => animations.forEach(animation => animation?.cancel())
+  }, [isTyping])
+
+  return <div ref={detailsRef} hidden={isTyping}>{children}</div>
 }
 
 function App() {
@@ -308,7 +330,7 @@ function App() {
                             ? <TypingSummary text={summary} hasDetails={Boolean(topic?.details || topic?.websites?.length)} onComplete={finishTyping} />
                             : <span aria-hidden="true">{summary}</span>}
                         </p>
-                        <div hidden={isTyping}>
+                        <ReplyDetails isTyping={isTyping}>
                           {!topic && (
                             <a className="email-question" href={`mailto:${profile.email}?subject=${encodeURIComponent('Portfolio question')}&body=${encodeURIComponent(text)}`}>
                               <Mail size={16} aria-hidden="true" /> Email this question to JC
@@ -335,7 +357,7 @@ function App() {
                             <ul className="answer-links">{topic.caseStudies.map(item => <li key={item.slug}><a href={caseStudyHref(item)}>{item.name} case study</a></li>)}</ul>
                           )}
                           {topic?.links && <ul className="answer-links">{topic.links.map(([label, href]) => <li key={href}><a href={href}>{label}</a></li>)}</ul>}
-                        </div>
+                        </ReplyDetails>
                       </div>
                     </article>
                     {!isTyping && <div className="follow-ups" role="group" aria-label="Suggested follow-up questions">
