@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 import {
-  ArrowUp, BriefcaseBusiness, ChevronRight, CodeXml, FolderOpen, Globe, GraduationCap, Mail, MapPin, Menu, Moon, PanelLeftClose, PanelLeftOpen, FileDown, Sun, ChevronUp,
+  ArrowLeft, ArrowUp, BriefcaseBusiness, ChevronRight, CodeXml, FolderOpen, Globe, GraduationCap, Mail, MapPin, Menu, Moon, PanelLeftClose, PanelLeftOpen, FileDown, Sun, ChevronUp,
   MessageCircle, Plus, Sparkles, UserRound, X,
 } from 'lucide-react'
 import { findEmployerTopic, profile, topics } from './profile'
@@ -43,7 +43,7 @@ function CaseStudy({ study, headingRef }) {
 
   return (
     <article className="case-study content-width">
-      <a className="case-link" href="#">Back to portfolio chat</a>
+      <a className="case-link" href="#"><ArrowLeft size={16} aria-hidden="true" /> Back to portfolio chat</a>
       <p className="case-context">{study.context}</p>
       <h1 ref={headingRef} tabIndex={-1}>{study.name}</h1>
       <p className="case-outcome"><strong>{study.metric}</strong> {study.outcome}</p>
