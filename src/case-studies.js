@@ -12,7 +12,7 @@ export const caseStudies = [
     image: 'pinoypubliko.webp',
     links: [
       ['Visit Pinoypubliko', 'https://pinoy-publiko.com/'],
-      ['Run a new PageSpeed Insights test', 'https://pagespeed.web.dev/?url=https%3A%2F%2Fpinoy-publiko.com%2F'],
+      ['Run a new PageSpeed Insights test', 'https://pagespeed.web.dev/analysis?url=https%3A%2F%2Fpinoy-publiko.com%2F'],
     ],
   },
   {
