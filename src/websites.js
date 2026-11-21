@@ -52,6 +52,7 @@ export const websites = [
     "name": "Jetset Golf",
     "url": "https://www.jetsetgolf.com.au/",
     "image": "jetset-golf.webp",
+    "archived": true,
     "platform": "WordPress / UI Build",
     "description": "Implemented responsive layouts and front-end sections."
   },
@@ -73,12 +74,14 @@ export const websites = [
     "name": "Novanude",
     "url": "https://novanude.com",
     "image": "novanude.webp",
+    "archived": true,
     "platform": "Shopify / Performance",
     "description": "Improved speed, UX, analytics, and marketing integrations."
   },
   {
     "name": "Philippine Constructors Association",
     "url": "https://philippineconstructors.org/",
+    "image": "philippine-constructors.webp",
     "platform": "Website development",
     "description": "Developed the organization’s website."
   }

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import {
-  ArrowUp, BriefcaseBusiness, ChevronRight, CodeXml, FolderOpen, Globe, GraduationCap, Mail, Menu,
+  ArrowUp, BriefcaseBusiness, ChevronRight, CodeXml, FolderOpen, Globe, GraduationCap, Mail, MapPin, Menu, Moon, PanelLeftClose, PanelLeftOpen, FileDown, Sun, ChevronUp,
   MessageCircle, Plus, Sparkles, UserRound, X,
 } from 'lucide-react'
 import { profile, topics } from './profile'
@@ -11,10 +11,30 @@ const icons = { about: UserRound, experience: BriefcaseBusiness, projects: Folde
 
 const searchableTopics = [...topics.slice(1), topics[0]]
 
+const followUps = {
+  about: ['experience', 'projects', 'websites'],
+  experience: ['projects', 'skills', 'websites'],
+  projects: ['websites', 'skills', 'contact'],
+  websites: ['projects', 'experience', 'contact'],
+  skills: ['projects', 'experience', 'education'],
+  education: ['skills', 'experience', 'contact'],
+  contact: ['about', 'projects', 'websites'],
+}
+
+function initialTheme() {
+  try {
+    return localStorage.getItem('portfolio-theme') === 'light' ? 'light' : 'dark'
+  } catch {
+    return 'dark'
+  }
+}
+
 function App() {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [theme, setTheme] = useState(initialTheme)
   const inputRef = useRef(null)
   const viewportRef = useRef(null)
   const activeTopic = messages.at(-1)?.topic?.id
@@ -30,6 +50,15 @@ function App() {
     const exchangeTop = exchange.getBoundingClientRect().top - viewport.getBoundingClientRect().top
     viewport.scrollTop = Math.min(viewport.scrollTop + exchangeTop, viewport.scrollHeight - viewport.clientHeight)
   }, [messages])
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    try {
+      localStorage.setItem('portfolio-theme', theme)
+    } catch {
+      // Keep the theme usable when browser storage is unavailable.
+    }
+  }, [theme])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -64,7 +93,7 @@ function App() {
   }
 
   return (
-    <div className="app">
+    <div className={sidebarCollapsed ? 'app sidebar-collapsed' : 'app'}>
       {menuOpen && <button className="scrim" onClick={() => setMenuOpen(false)} aria-label="Close navigation" />}
       <aside className={menuOpen ? 'sidebar open' : 'sidebar'} id="navigation">
         <div className="brand">
@@ -80,18 +109,47 @@ function App() {
             return <button key={topic.id} aria-current={activeTopic === topic.id ? 'true' : undefined} onClick={() => ask(topic.prompt, topic)}><Icon size={17} />{topic.label}</button>
           })}
         </nav>
-        <div className="profile">
-          <span className="avatar">{profile.initials}</span>
-          <div><strong>{profile.name}</strong><span>{profile.role}</span></div>
-        </div>
+        <details className="profile">
+          <summary aria-label="Contact and location">
+            <span className="avatar">{profile.initials}</span>
+            <span className="profile-identity"><strong>{profile.name}</strong><span>{profile.role}</span></span>
+            <ChevronUp className="profile-chevron" size={15} aria-hidden="true" />
+          </summary>
+          <div className="profile-details">
+            <p><MapPin size={16} aria-hidden="true" />{profile.location}</p>
+            <a href={`mailto:${profile.email}`}><Mail size={16} aria-hidden="true" />{profile.email}</a>
+          </div>
+        </details>
       </aside>
 
       <main className="main">
         <header className="topbar">
           <div className="topbar-title">
             <button className="icon-button mobile-menu" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-controls="navigation" aria-label="Toggle navigation"><Menu size={21} /></button>
-            <MessageCircle className="header-icon" size={17} />
+            <button
+              className="icon-button desktop-sidebar-toggle"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              aria-expanded={!sidebarCollapsed}
+              aria-controls="navigation"
+              aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {sidebarCollapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
+            </button>
             <span>Portfolio assistant</span>
+          </div>
+          <div className="topbar-actions">
+            <button
+              className="icon-button theme-toggle"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+              title={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+            >
+              {theme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}
+            </button>
+            <a className="resume-download" href={`${import.meta.env.BASE_URL}${profile.resume}`} download aria-label="Download résumé PDF" title="Download résumé PDF">
+              <FileDown size={17} aria-hidden="true" /><span>Résumé</span>
+            </a>
           </div>
         </header>
 
@@ -125,7 +183,12 @@ function App() {
                     <span className="answer-icon" aria-hidden="true"><Sparkles size={17} /></span>
                     <div className="answer-body">
                       <h2>{topic?.label ?? 'Portfolio assistant'}</h2>
-                      <p>{topic?.summary ?? 'Try asking about my background, experience, projects, websites, skills, education, or contact details.'}</p>
+                      <p>{topic?.summary ?? 'I couldn’t match that question to the topics in my portfolio. You can email it to me or try one of the questions below.'}</p>
+                      {!topic && (
+                        <a className="email-question" href={`mailto:${profile.email}?subject=${encodeURIComponent('Portfolio question')}&body=${encodeURIComponent(text)}`}>
+                          <Mail size={16} aria-hidden="true" /> Email this question to JC
+                        </a>
+                      )}
                       {topic?.details && <dl>{topic.details.map(([name, description]) => <div key={name}><dt>{name}</dt><dd>{description}</dd></div>)}</dl>}
                       {topic?.websites && (
                         <ul className="website-grid">
@@ -135,7 +198,7 @@ function App() {
                                 {site.image && <img src={`${import.meta.env.BASE_URL}images/${site.image}`} alt="" loading="lazy" />}
                                 <div>
                                   <h3>{site.name}</h3>
-                                  <span>{site.platform}</span>
+                                  <span>{site.platform}{site.archived ? ' · Archived screenshot' : ''}</span>
                                   <p>{site.description}</p>
                                 </div>
                               </a>
@@ -146,6 +209,12 @@ function App() {
                       {topic?.links && <ul className="answer-links">{topic.links.map(([label, href]) => <li key={href}><a href={href}>{label}</a></li>)}</ul>}
                     </div>
                   </article>
+                  <div className="follow-ups" role="group" aria-label="Suggested follow-up questions">
+                    {(followUps[topic?.id] ?? followUps.about).map(id => {
+                      const suggestion = topics.find(item => item.id === id)
+                      return <button key={id} onClick={() => ask(suggestion.prompt, suggestion)}>{suggestion.prompt}</button>
+                    })}
+                  </div>
                 </div>
               ))}
             </section>

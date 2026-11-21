@@ -5,6 +5,9 @@ export const profile = {
   firstName: 'JC',
   initials: 'JC',
   role: 'Senior Software Engineer',
+  location: 'Cainta, Rizal, Philippines',
+  email: 'jcasantos11@gmail.com',
+  resume: 'JC_Santos_Resume.pdf',
 }
 
 export const topics = [
@@ -13,7 +16,7 @@ export const topics = [
     label: 'About me',
     prompt: 'Tell me about yourself',
     description: 'Background and what I do',
-    keywords: /about|yourself|background|hello|^hi\b|who (?:are|is)|intro|location|based/i,
+    keywords: /\b(?:about (?:you|jc)\b|yourself|background|intro(?:duction)?|location|where (?:are you|is jc) (?:from|based)|who (?:are you|is jc))\b|^(?:hi|hello|hey)[.!?]*$/i,
     summary: 'I’m Jose Carlos Santos, a senior software engineer based in Cainta, Rizal, Philippines. I build full-stack web applications, internal business systems, and eCommerce sites. My work spans PHP and Laravel development, WordPress, Shopify, and integrations for organizations in the Philippines, Australia, the United States, and the United Kingdom.',
   },
   {
@@ -89,6 +92,6 @@ export const topics = [
     description: 'Contact details and links',
     keywords: /contact|email|reach|get in touch|hire/i,
     summary: 'You can reach me by email to discuss software engineering roles or projects.',
-    links: [['Email JC', 'mailto:jcasantos11@gmail.com']],
+    links: [['Email JC', `mailto:${profile.email}`]],
   },
 ]
