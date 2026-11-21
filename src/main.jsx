@@ -37,7 +37,7 @@ function App() {
   const [theme, setTheme] = useState(initialTheme)
   const inputRef = useRef(null)
   const viewportRef = useRef(null)
-  const activeTopic = messages.at(-1)?.topic?.id
+  const [activeTopic, setActiveTopic] = useState(undefined)
 
   useEffect(() => {
     const viewport = viewportRef.current
@@ -74,8 +74,23 @@ function App() {
     if (!text) return
     const answerTopic = topic ?? searchableTopics.find(item => item.keywords.test(text))
     setMessages(current => [...current, { text, topic: answerTopic }])
+    setActiveTopic(answerTopic?.id)
     setInput('')
     setMenuOpen(false)
+  }
+
+  function openSidebarTopic(topic) {
+    const index = messages.findLastIndex(message => message.topic?.id === topic.id)
+    if (index === -1) {
+      ask(topic.prompt, topic)
+      return
+    }
+
+    setActiveTopic(topic.id)
+    setMenuOpen(false)
+    const viewport = viewportRef.current
+    const exchange = viewport.querySelectorAll('.exchange')[index]
+    if (exchange) viewport.scrollTop += exchange.getBoundingClientRect().top - viewport.getBoundingClientRect().top
   }
 
   function handleComposerKeyDown(event) {
@@ -87,6 +102,7 @@ function App() {
 
   function reset() {
     setMessages([])
+    setActiveTopic(undefined)
     setInput('')
     setMenuOpen(false)
     inputRef.current?.focus()
@@ -106,7 +122,7 @@ function App() {
           <h2>Explore</h2>
           {topics.map(topic => {
             const Icon = icons[topic.id]
-            return <button key={topic.id} aria-label={topic.label} title={sidebarCollapsed ? topic.label : undefined} aria-current={activeTopic === topic.id ? 'true' : undefined} onClick={() => ask(topic.prompt, topic)}><Icon size={17} /><span>{topic.label}</span></button>
+            return <button key={topic.id} aria-label={topic.label} title={sidebarCollapsed ? topic.label : undefined} aria-current={activeTopic === topic.id ? 'true' : undefined} onClick={() => openSidebarTopic(topic)}><Icon size={17} /><span>{topic.label}</span></button>
           })}
         </nav>
         <details className="profile">
