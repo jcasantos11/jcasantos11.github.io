@@ -361,3 +361,10 @@ nav button[aria-current] svg { color: var(--accent); }
 }
 
 .reply-body { flex: 1; }
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root), ::view-transition-new(root) {
+    animation-duration: 260ms;
+    animation-timing-function: ease-in-out;
+  }
+}

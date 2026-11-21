@@ -1,4 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 import {
   ArrowUp, BriefcaseBusiness, ChevronRight, CodeXml, FolderOpen, Globe, GraduationCap, Mail, MapPin, Menu, Moon, PanelLeftClose, PanelLeftOpen, FileDown, Sun, ChevronUp,
@@ -68,6 +69,7 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [theme, setTheme] = useState(initialTheme)
+  const appRef = useRef(null)
   const inputRef = useRef(null)
   const viewportRef = useRef(null)
   const followReply = useRef(false)
@@ -153,6 +155,27 @@ function App() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [menuOpen])
 
+  function toggleTheme() {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark'
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      setTheme(nextTheme)
+      return
+    }
+
+    const updateTheme = () => {
+      document.documentElement.dataset.theme = nextTheme
+      flushSync(() => setTheme(nextTheme))
+    }
+
+    if (document.startViewTransition) {
+      document.startViewTransition(updateTheme)
+      return
+    }
+
+    updateTheme()
+    appRef.current?.animate?.([{ opacity: .72 }, { opacity: 1 }], { duration: 240, easing: 'ease-out' })
+  }
+
   function ask(question, topic) {
     const text = question.trim()
     if (!text) return
@@ -201,7 +224,7 @@ function App() {
   }
 
   return (
-    <div className={sidebarCollapsed ? 'app sidebar-collapsed' : 'app'}>
+    <div ref={appRef} className={sidebarCollapsed ? 'app sidebar-collapsed' : 'app'}>
       {menuOpen && <button className="scrim" onClick={() => setMenuOpen(false)} aria-label="Close navigation" />}
       <aside className={menuOpen ? 'sidebar open' : 'sidebar'} id="navigation">
         <div className="brand">
@@ -249,7 +272,7 @@ function App() {
           <div className="topbar-actions">
             <button
               className="icon-button theme-toggle"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              onClick={toggleTheme}
               aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
               data-tooltip={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
             >
