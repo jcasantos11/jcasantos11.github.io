@@ -97,7 +97,7 @@ function CaseStudy({ study, headingRef }) {
 
 const unmatchedSummary = 'I couldn’t match that question to the topics in my portfolio. You can email it to me or try one of the questions below.'
 
-function WorkEmailLink({ href, children, contact = false }) {
+function WorkEmailLink({ href, children, contact = false, header = false, linkRef }) {
   const [launching, setLaunching] = useState(false)
   const launchTimer = useRef(null)
 
@@ -119,15 +119,19 @@ function WorkEmailLink({ href, children, contact = false }) {
 
   return (
     <a
-      className={`work-cta${contact ? ' contact-cta' : ''}${launching ? ' is-launching' : ''}`}
+      ref={linkRef}
+      className={`work-cta${contact ? ' contact-cta' : ''}${header ? ' header-work-cta' : ''}${launching ? ' is-launching' : ''}`}
       href={href}
+      aria-label={header ? children : undefined}
+      data-tooltip={header ? children : undefined}
       onClick={launchEmail}
     >
       <span className="work-cta-envelope" aria-hidden="true">
         <Mail className="work-cta-mail-closed" size={17} />
         <MailOpen className="work-cta-mail-open" size={17} />
       </span>
-      {children}
+      <span className="work-cta-label">{children}</span>
+      {header && <span className="work-cta-sparkles" aria-hidden="true"><i /><i /><i /></span>}
     </a>
   )
 }
@@ -141,6 +145,9 @@ function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [theme, setTheme] = useState(initialTheme)
   const appRef = useRef(null)
+  const headerWorkLink = useRef(null)
+  const workLinkOrigin = useRef(null)
+  const hasMessages = messages.length > 0
   const inputRef = useRef(null)
   const viewportRef = useRef(null)
   const followReply = useRef(false)
@@ -155,6 +162,26 @@ function App() {
   const [study, setStudy] = useState(currentCaseStudy)
   const studyHeading = useRef(null)
   const [activeTopic, setActiveTopic] = useState(undefined)
+
+  useLayoutEffect(() => {
+    const origin = workLinkOrigin.current
+    workLinkOrigin.current = null
+    const link = headerWorkLink.current
+    if (!link || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+
+    const target = link.getBoundingClientRect()
+    const start = origin && target.width && target.height
+      ? {
+          transform: `translate(${origin.left - target.left}px, ${origin.top - target.top}px) scale(${origin.width / target.width}, ${origin.height / target.height})`,
+        }
+      : { transform: 'translateY(8px)', opacity: 0 }
+
+    const animation = link.animate?.(
+      [start, { transform: 'none', opacity: 1 }],
+      { duration: origin ? 520 : 220, easing: 'cubic-bezier(.2, .75, .3, 1)' },
+    )
+    return () => animation?.cancel()
+  }, [hasMessages])
 
   useEffect(() => {
     const loader = document.getElementById('portfolio-loader')
@@ -282,6 +309,13 @@ function App() {
     const text = question.trim()
     if (!text) return
     const answerTopic = topic ?? findEmployerTopic(text) ?? searchableTopics.find(item => item.keywords.test(text))
+    if (!hasMessages) {
+      const origin = viewportRef.current.querySelector('.welcome .work-cta')?.getBoundingClientRect()
+      const viewport = viewportRef.current.getBoundingClientRect()
+      if (origin && origin.width && origin.height && origin.top >= viewport.top && origin.bottom <= viewport.bottom) {
+        workLinkOrigin.current = origin
+      }
+    }
     if (study) window.location.hash = ''
     const reply = { text, topic: answerTopic }
     pendingPresentation.current = reply
@@ -382,6 +416,7 @@ function App() {
             >
               {theme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}
             </button>
+            {hasMessages && <WorkEmailLink href={workEmailHref} header linkRef={headerWorkLink}>Work with me</WorkEmailLink>}
             <a className="resume-download" href={`${import.meta.env.BASE_URL}${profile.resume}`} download aria-label="Download résumé PDF" data-tooltip="Download résumé PDF">
               <FileDown size={17} aria-hidden="true" /><span>Résumé</span>
             </a>

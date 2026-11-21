@@ -552,9 +552,9 @@ nav button[aria-current] svg { color: var(--accent); }
 @keyframes work-email-launch {
   0% { transform: translate(0, 0) rotate(0); color: var(--page); }
   16% { transform: translate(-2px, 3px) rotate(9deg) scale(.92); color: var(--page); }
-  43% { transform: translate(23px, -34px) rotate(24deg) scale(1.18); color: var(--accent); }
+  43% { transform: translate(23px, calc(-34px * var(--work-flight-rise, 1))) rotate(24deg) scale(1.18); color: var(--accent); }
   76% { opacity: 1; }
-  100% { transform: translate(60px, -77px) rotate(38deg) scale(.84); color: var(--accent); opacity: 0; }
+  100% { transform: translate(60px, calc(-77px * var(--work-flight-rise, 1))) rotate(38deg) scale(.84); color: var(--accent); opacity: 0; }
 }
 
 .topic-icon { display: inline-grid; place-items: center; flex: none; }
@@ -638,4 +638,45 @@ nav button[aria-current] svg { color: var(--accent); }
   0%, 100% { opacity: 1; transform: translateY(0); }
   40% { opacity: 0; transform: translateY(5px); }
   42% { opacity: 0; transform: translateY(-5px); }
+}
+
+.header-work-cta {
+  --work-flight-rise: -1;
+  position: relative;
+  min-height: 36px;
+  margin: 0;
+  padding: 5px 10px;
+  transform-origin: top left;
+  white-space: nowrap;
+}
+@media (max-width: 760px) {
+  .topbar:has(.header-work-cta) { position: relative; z-index: 0; }
+}
+@media (max-width: 520px) {
+  .header-work-cta { width: 36px; padding-inline: 0; }
+  .header-work-cta .work-cta-label { display: none; }
+}
+
+.work-cta-sparkles { position: absolute; inset: 0; pointer-events: none; }
+.work-cta-sparkles i {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  opacity: 0;
+  background: linear-gradient(135deg, #fff, var(--accent));
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+}
+.work-cta-sparkles i:nth-child(1) { top: -5px; right: 7px; }
+.work-cta-sparkles i:nth-child(2) { top: 4px; right: -4px; width: 8px; height: 8px; }
+.work-cta-sparkles i:nth-child(3) { bottom: -3px; left: -4px; width: 9px; height: 9px; }
+@media (prefers-reduced-motion: no-preference) {
+  .work-cta-sparkles { filter: drop-shadow(0 0 5px var(--accent)); }
+  .work-cta-sparkles i { animation: work-cta-sparkle 690ms ease-out 540ms both; }
+  .work-cta-sparkles i:nth-child(2) { animation-delay: 640ms; }
+  .work-cta-sparkles i:nth-child(3) { animation-delay: 720ms; }
+}
+@keyframes work-cta-sparkle {
+  0% { opacity: 0; transform: scale(.25) rotate(-22deg); }
+  35% { opacity: 1; transform: scale(1.2) rotate(8deg); }
+  100% { opacity: 0; transform: translateY(-7px) scale(.55) rotate(32deg); }
 }
