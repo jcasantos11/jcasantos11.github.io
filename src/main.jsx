@@ -5,7 +5,7 @@ import {
   ArrowLeft, ArrowUp, BriefcaseBusiness, ChevronRight, CodeXml, FolderOpen, Globe, GraduationCap, Mail, MailOpen, MapPin, Menu, Moon, PanelLeftClose, PanelLeftOpen, FileDown, Sun, ChevronUp,
   MessageCircle, PenLine, Plus, Sparkles, UserRound, X,
 } from 'lucide-react'
-import { findEmployerTopic, profile, topics, workEmailHref } from './profile'
+import { faqTopics, findAnswerTopic, profile, topics, workEmailHref } from './profile'
 import { caseStudies } from './case-studies'
 import './styles.css'
 
@@ -22,7 +22,7 @@ function TopicIcon({ id, size }) {
   )
 }
 
-const searchableTopics = [...topics.slice(1), topics[0]]
+const allTopics = [...topics, ...faqTopics]
 
 const followUps = {
   about: ['experience', 'projects', 'websites'],
@@ -31,7 +31,9 @@ const followUps = {
   websites: ['projects', 'experience', 'contact'],
   skills: ['projects', 'experience', 'education'],
   education: ['skills', 'experience', 'contact'],
-  contact: ['about', 'projects', 'websites'],
+  contact: ['services', 'availability', 'project-start'],
+  client: ['projects', 'websites', 'contact'],
+  recruiter: ['experience', 'skills', 'contact'],
 }
 
 function initialTheme() {
@@ -412,7 +414,7 @@ function App() {
   function ask(question, topic) {
     const text = question.trim()
     if (!text) return
-    const answerTopic = topic ?? findEmployerTopic(text) ?? searchableTopics.find(item => item.keywords.test(text))
+    const answerTopic = topic ?? findAnswerTopic(text)
     if (!hasMessages) {
       const origin = viewportRef.current.querySelector('.welcome .work-cta')?.getBoundingClientRect()
       const viewport = viewportRef.current.getBoundingClientRect()
@@ -601,6 +603,19 @@ function App() {
                   </button>
                 })}
               </div>
+              <details className="common-questions">
+                <summary>Common questions</summary>
+                {['client', 'recruiter'].map(category => (
+                  <section key={category} aria-labelledby={`questions-${category}`}>
+                    <h2 id={`questions-${category}`}>{category === 'client' ? 'For clients' : 'For recruiters'}</h2>
+                    <div className="follow-ups">
+                      {faqTopics.filter(topic => topic.category === category).map(topic => (
+                        <button key={topic.id} type="button" onClick={() => ask(topic.prompt, topic)}>{topic.prompt}</button>
+                      ))}
+                    </div>
+                  </section>
+                ))}
+              </details>
             </section>
           ) : (
             <section className="conversation content-width" role="log" aria-label="Portfolio conversation">
@@ -654,7 +669,7 @@ function App() {
                     </article>
                     {!isThinking && <div className="follow-ups" role="group" aria-label="Suggested follow-up questions">
                       {(followUps[topic?.category ?? topic?.id] ?? followUps.about).map(id => {
-                        const suggestion = topics.find(item => item.id === id)
+                        const suggestion = allTopics.find(item => item.id === id)
                         return <button key={id} onClick={() => ask(suggestion.prompt, suggestion)}>{suggestion.prompt}</button>
                       })}
                     </div>}

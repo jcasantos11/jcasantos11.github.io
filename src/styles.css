@@ -819,3 +819,21 @@ nav button[aria-current] svg { color: var(--accent); }
   }
   .composer button.composer-close:hover { background: var(--accent-surface); color: var(--accent); }
 }
+
+.common-questions {
+  margin-top: 14px;
+  padding: 8px 13px;
+  border: 1px solid var(--accent-border);
+  border-radius: 10px;
+  background: var(--surface);
+  text-align: left;
+}
+.common-questions summary {
+  padding-block: 4px;
+  cursor: pointer;
+  color: var(--accent);
+  font-size: .875rem;
+  font-weight: 700;
+}
+.common-questions h2 { margin: 12px 0 6px; font-size: .875rem; }
+.common-questions .follow-ups { margin: 0 0 10px; }
