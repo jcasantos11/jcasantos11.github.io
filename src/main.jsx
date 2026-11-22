@@ -221,6 +221,8 @@ function WebsiteShowcase({ websites }) {
 
 function ChatJumpRail({ messages, onJump }) {
   const railRef = useRef(null)
+  const gesture = useRef(null)
+  const [scrubbing, setScrubbing] = useState(false)
   const [tooltip, setTooltip] = useState(null)
 
   function showQuestion(button, text) {
@@ -229,32 +231,84 @@ function ChatJumpRail({ messages, onJump }) {
     setTooltip({ text, top: marker.top - rail.top + marker.height / 2 })
   }
 
+  function beginScrub(event) {
+    if (event.button !== 0 || gesture.current) return
+    const marker = event.target.closest('.chat-jump-marker')
+    if (!marker) return
+
+    const index = Number(marker.dataset.index)
+    gesture.current = { pointerId: event.pointerId, startY: event.clientY, index, moved: false }
+    event.currentTarget.setPointerCapture(event.pointerId)
+    setScrubbing(true)
+    const rail = event.currentTarget.getBoundingClientRect()
+    setTooltip({ text: messages[index].text, top: Math.max(0, Math.min(rail.height, event.clientY - rail.top)) })
+  }
+
+  function moveScrub(event) {
+    const current = gesture.current
+    if (!current || current.pointerId !== event.pointerId) return
+    if (!current.moved && Math.abs(event.clientY - current.startY) < 5) return
+
+    current.moved = true
+    const rail = event.currentTarget.getBoundingClientRect()
+    const top = Math.max(0, Math.min(rail.height, event.clientY - rail.top))
+    const index = Math.min(messages.length - 1, Math.floor(top / Math.max(1, rail.height) * messages.length))
+    setTooltip({ text: messages[index].text, top })
+    if (index !== current.index) {
+      current.index = index
+      onJump(index, true)
+    }
+  }
+
+  function endScrub(event) {
+    const current = gesture.current
+    if (!current || current.pointerId !== event.pointerId) return
+    gesture.current = null
+    setScrubbing(false)
+    setTooltip(null)
+    if (event.type === 'pointerup' && !current.moved) onJump(current.index)
+  }
+
   return (
-    <nav className="chat-jump-rail" ref={railRef} aria-label="Jump to a question">
-      <ol className="chat-jump-list" onScroll={() => setTooltip(null)}>
+    <nav
+      className={scrubbing ? 'chat-jump-rail is-scrubbing' : 'chat-jump-rail'}
+      ref={railRef}
+      aria-label="Jump to a question"
+      onPointerDown={beginScrub}
+      onPointerMove={moveScrub}
+      onPointerUp={endScrub}
+      onPointerCancel={endScrub}
+      onLostPointerCapture={event => {
+        if (event.target === event.currentTarget) endScrub(event)
+      }}
+      onContextMenu={event => { if (gesture.current) event.preventDefault() }}
+    >
+      <ol className="chat-jump-list" onScroll={() => { if (!gesture.current) setTooltip(null) }}>
         {messages.map(({ text }, index) => (
           <li key={index}>
             <button
               className="chat-jump-marker"
               type="button"
+              data-index={index}
               aria-label={`Jump to question ${index + 1}: ${text}`}
               aria-controls={`chat-question-${index + 1}`}
               onPointerEnter={event => {
-                if (event.pointerType !== 'touch') showQuestion(event.currentTarget, text)
+                if (!gesture.current && event.pointerType !== 'touch') showQuestion(event.currentTarget, text)
               }}
-              onPointerLeave={() => setTooltip(null)}
+              onPointerLeave={() => { if (!gesture.current) setTooltip(null) }}
               onFocus={event => {
-                if (event.currentTarget.matches(':focus-visible')) showQuestion(event.currentTarget, text)
+                if (!gesture.current && event.currentTarget.matches(':focus-visible')) showQuestion(event.currentTarget, text)
               }}
-              onBlur={() => setTooltip(null)}
+              onBlur={() => { if (!gesture.current) setTooltip(null) }}
               onKeyDown={event => {
                 if (event.key === 'Escape') setTooltip(null)
               }}
-              onClick={() => onJump(index)}
+              onClick={event => { if (event.detail === 0) onJump(index) }}
             />
           </li>
         ))}
       </ol>
+      {scrubbing && tooltip && <span className="chat-jump-thumb" style={{ top: tooltip.top }} aria-hidden="true" />}
       {tooltip && <span className="chat-jump-tooltip" style={{ top: tooltip.top }} aria-hidden="true">{tooltip.text}</span>}
     </nav>
   )
@@ -494,7 +548,7 @@ function App() {
     viewport.scrollTo({ top: viewport.scrollTop, behavior: 'instant' })
   }
 
-  function jumpToQuestion(index) {
+  function jumpToQuestion(index, immediate = false) {
     const viewport = viewportRef.current
     const question = viewport.querySelector(`#chat-question-${index + 1}`)
     if (!question) return
@@ -502,7 +556,7 @@ function App() {
 
     const top = viewport.scrollTop + question.getBoundingClientRect().top - viewport.getBoundingClientRect().top - 16
     const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    viewport.scrollTo({ top: Math.max(0, top), behavior: reducedMotion ? 'instant' : 'smooth' })
+    viewport.scrollTo({ top: Math.max(0, top), behavior: immediate || reducedMotion ? 'instant' : 'smooth' })
   }
 
   function openComposer() {
