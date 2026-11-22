@@ -181,8 +181,9 @@ export const faqTopics = [
     label: 'How I can help',
     prompt: 'What can you help my business with?',
     keywords: /\b(?:services?|what can you (?:help|do for)|help (?:my|our) business|can you (?:build|develop|create|make) (?:me |us )?(?:an?|my|our|a new) (?:web\s?site|web app|business system))\b/i,
-    summary: 'I can help build a Laravel application, create or improve a WordPress or WooCommerce site, or customize a Shopify storefront. I also work on API integrations, performance troubleshooting, and deployments. If you share your goal and what you already have, we can discuss the right scope.',
-    action: { label: 'Discuss your project', href: workEmailHref },
+    summary: 'I help teams cut down on repetitive admin work and improve websites that are slow or hard to update. At SABInc, I built an HR and payroll system that reduced administrative workload by 40%. If you’re hiring or have a project in mind, tell me what’s slowing your team down and what you’d like to improve.',
+    caseStudies: caseStudies.filter(study => study.slug === 'sabinc-payroll'),
+    action: { label: 'Tell me what you need', href: workEmailHref },
   },
   {
     id: 'laravel-systems',
