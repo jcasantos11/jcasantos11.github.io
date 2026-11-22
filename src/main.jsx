@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { faqTopics, findAnswerTopic, profile, topics, workEmailHref } from './profile'
 import { caseStudies } from './case-studies'
+import { getSuggestions } from './suggestions'
 import './styles.css'
 
 const icons = { about: UserRound, experience: BriefcaseBusiness, projects: FolderOpen, websites: Globe, skills: CodeXml, education: GraduationCap, contact: Mail }
@@ -20,20 +21,6 @@ function TopicIcon({ id, size }) {
       {id === 'contact' && <MailOpen className="topic-icon-mail-open" size={size} />}
     </span>
   )
-}
-
-const allTopics = [...topics, ...faqTopics]
-
-const followUps = {
-  about: ['experience', 'projects', 'websites'],
-  experience: ['projects', 'skills', 'websites'],
-  projects: ['websites', 'skills', 'contact'],
-  websites: ['projects', 'experience', 'contact'],
-  skills: ['projects', 'experience', 'education'],
-  education: ['skills', 'experience', 'contact'],
-  contact: ['services', 'availability', 'project-start'],
-  client: ['projects', 'websites', 'contact'],
-  recruiter: ['experience', 'skills', 'contact'],
 }
 
 function initialTheme() {
@@ -316,6 +303,7 @@ function ChatJumpRail({ messages, onJump }) {
 
 function App() {
   const [messages, setMessages] = useState([])
+  const [welcomeSuggestions, setWelcomeSuggestions] = useState(() => getSuggestions())
   const [portfolioReady, setPortfolioReady] = useState(false)
   const pendingPresentation = useRef(null)
   const [pendingReply, setPendingReply] = useState(null)
@@ -518,7 +506,7 @@ function App() {
       }
     }
     if (study) window.location.hash = ''
-    const reply = { text, topic: answerTopic }
+    const reply = { text, topic: answerTopic, suggestions: getSuggestions(answerTopic) }
     pendingPresentation.current = reply
     followReply.current = true
     setPendingReply(reply)
@@ -580,6 +568,7 @@ function App() {
     if (study) window.location.hash = ''
     stopFollowingReply()
     setMessages([])
+    setWelcomeSuggestions(getSuggestions())
     setPendingReply(null)
     pendingPresentation.current = null
     setActiveTopic(undefined)
@@ -703,13 +692,18 @@ function App() {
                   </div>
                 </section>
                 <div className="suggestions">
-                  {topics.filter(topic => ['experience', 'projects', 'websites', 'skills'].includes(topic.id)).map(topic => {
-                    return <button className="suggestion" key={topic.id} onClick={() => ask(topic.prompt, topic)}>
-                      <span className="suggestion-icon"><TopicIcon id={topic.id} size={18} /></span>
-                      <span className="suggestion-text"><strong>{topic.prompt}</strong><small>{topic.description}</small></span>
+                  {welcomeSuggestions.map(topic => (
+                    <button className="suggestion" key={topic.id} onClick={() => ask(topic.prompt, topic)}>
+                      <span className="suggestion-icon">
+                        <TopicIcon id={topic.category === 'client' ? 'projects' : topic.category === 'recruiter' ? 'experience' : topic.id} size={18} />
+                      </span>
+                      <span className="suggestion-text">
+                        <strong>{topic.prompt}</strong>
+                        <small>{topic.description ?? (topic.category === 'client' ? 'For clients' : 'For recruiters')}</small>
+                      </span>
                       <ChevronRight className="suggestion-chevron" size={16} aria-hidden="true" />
                     </button>
-                  })}
+                  ))}
                 </div>
                 <details className="common-questions">
                   <summary>Common questions</summary>
@@ -776,10 +770,9 @@ function App() {
                         )}
                       </article>
                       {!isThinking && <div className="follow-ups" role="group" aria-label="Suggested follow-up questions">
-                        {(followUps[topic?.category ?? topic?.id] ?? followUps.about).map(id => {
-                          const suggestion = allTopics.find(item => item.id === id)
-                          return <button key={id} onClick={() => ask(suggestion.prompt, suggestion)}>{suggestion.prompt}</button>
-                        })}
+                        {reply.suggestions.map(suggestion => (
+                          <button key={suggestion.id} onClick={() => ask(suggestion.prompt, suggestion)}>{suggestion.prompt}</button>
+                        ))}
                       </div>}
                     </div>
                   )
