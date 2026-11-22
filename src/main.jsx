@@ -219,6 +219,47 @@ function WebsiteShowcase({ websites }) {
   )
 }
 
+function ChatJumpRail({ messages, onJump }) {
+  const railRef = useRef(null)
+  const [tooltip, setTooltip] = useState(null)
+
+  function showQuestion(button, text) {
+    const marker = button.getBoundingClientRect()
+    const rail = railRef.current.getBoundingClientRect()
+    setTooltip({ text, top: marker.top - rail.top + marker.height / 2 })
+  }
+
+  return (
+    <nav className="chat-jump-rail" ref={railRef} aria-label="Jump to a question">
+      <ol className="chat-jump-list" onScroll={() => setTooltip(null)}>
+        {messages.map(({ text }, index) => (
+          <li key={index}>
+            <button
+              className="chat-jump-marker"
+              type="button"
+              aria-label={`Jump to question ${index + 1}: ${text}`}
+              aria-controls={`chat-question-${index + 1}`}
+              onPointerEnter={event => {
+                if (event.pointerType !== 'touch') showQuestion(event.currentTarget, text)
+              }}
+              onPointerLeave={() => setTooltip(null)}
+              onFocus={event => {
+                if (event.currentTarget.matches(':focus-visible')) showQuestion(event.currentTarget, text)
+              }}
+              onBlur={() => setTooltip(null)}
+              onKeyDown={event => {
+                if (event.key === 'Escape') setTooltip(null)
+              }}
+              onClick={() => onJump(index)}
+            />
+          </li>
+        ))}
+      </ol>
+      {tooltip && <span className="chat-jump-tooltip" style={{ top: tooltip.top }} aria-hidden="true">{tooltip.text}</span>}
+    </nav>
+  )
+}
+
 function App() {
   const [messages, setMessages] = useState([])
   const [portfolioReady, setPortfolioReady] = useState(false)
@@ -453,6 +494,17 @@ function App() {
     viewport.scrollTo({ top: viewport.scrollTop, behavior: 'instant' })
   }
 
+  function jumpToQuestion(index) {
+    const viewport = viewportRef.current
+    const question = viewport.querySelector(`#chat-question-${index + 1}`)
+    if (!question) return
+    stopFollowingReply()
+
+    const top = viewport.scrollTop + question.getBoundingClientRect().top - viewport.getBoundingClientRect().top - 16
+    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    viewport.scrollTo({ top: Math.max(0, top), behavior: reducedMotion ? 'instant' : 'smooth' })
+  }
+
   function openComposer() {
     flushSync(() => setComposerOpen(true))
     inputRef.current?.focus({ preventScroll: true })
@@ -555,129 +607,132 @@ function App() {
           </div>
         </header>
 
-        <div
-          className="viewport"
-          ref={viewportRef}
-          tabIndex={0}
-          role="region"
-          aria-label={study ? 'Case study' : 'Chat'}
-          onWheel={stopFollowingReply}
-          onTouchMove={stopFollowingReply}
-          onPointerDown={event => {
-            if (event.target === event.currentTarget) stopFollowingReply()
-          }}
-          onKeyDown={event => {
-            if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) {
-              stopFollowingReply()
-            }
-          }}
-        >
-          {study ? <CaseStudy study={study} headingRef={studyHeading} /> : messages.length === 0 ? (
-            <section className="welcome content-width" aria-labelledby="welcome-title">
-              <div className="hero-art" aria-hidden="true">
-                <span className="orbit orbit-outer" /><span className="orbit orbit-inner" />
-                <span className="star star-left">✦</span><span className="star star-right">✧</span>
-                <span className="hero-emblem"><span className="hero-icon"><Sparkles size={33} strokeWidth={1.65} /></span></span>
-              </div>
-              <h1 id="welcome-title">Hi, I’m <span>{profile.firstName}.</span></h1>
-              <p>Welcome to my interactive portfolio. Ask me about my work,<br className="desktop-break" /> experience, or the tools I use.</p>
-              <WorkEmailLink href={workEmailHref}>Work with me</WorkEmailLink>
-              <section className="featured-projects" aria-labelledby="featured-heading">
-                <h2 id="featured-heading">Featured projects</h2>
-                <div className="featured-grid">
-                  {caseStudies.map(item => (
-                    <a key={item.slug} href={caseStudyHref(item)}>
-                      <FeaturedMetric metric={item.metric} ready={portfolioReady} />
-                      <span>{item.name}</span>
-                      <small>{item.outcome}</small>
-                    </a>
-                  ))}
+        <div className={hasMessages && !study ? 'chat-stage has-chat' : 'chat-stage'}>
+          {hasMessages && !study && <ChatJumpRail messages={messages} onJump={jumpToQuestion} />}
+          <div
+            className="viewport"
+            ref={viewportRef}
+            tabIndex={0}
+            role="region"
+            aria-label={study ? 'Case study' : 'Chat'}
+            onWheel={stopFollowingReply}
+            onTouchMove={stopFollowingReply}
+            onPointerDown={event => {
+              if (event.target === event.currentTarget) stopFollowingReply()
+            }}
+            onKeyDown={event => {
+              if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) {
+                stopFollowingReply()
+              }
+            }}
+          >
+            {study ? <CaseStudy study={study} headingRef={studyHeading} /> : messages.length === 0 ? (
+              <section className="welcome content-width" aria-labelledby="welcome-title">
+                <div className="hero-art" aria-hidden="true">
+                  <span className="orbit orbit-outer" /><span className="orbit orbit-inner" />
+                  <span className="star star-left">✦</span><span className="star star-right">✧</span>
+                  <span className="hero-emblem"><span className="hero-icon"><Sparkles size={33} strokeWidth={1.65} /></span></span>
                 </div>
-              </section>
-              <div className="suggestions">
-                {topics.filter(topic => ['experience', 'projects', 'websites', 'skills'].includes(topic.id)).map(topic => {
-                  return <button className="suggestion" key={topic.id} onClick={() => ask(topic.prompt, topic)}>
-                    <span className="suggestion-icon"><TopicIcon id={topic.id} size={18} /></span>
-                    <span className="suggestion-text"><strong>{topic.prompt}</strong><small>{topic.description}</small></span>
-                    <ChevronRight className="suggestion-chevron" size={16} aria-hidden="true" />
-                  </button>
-                })}
-              </div>
-              <details className="common-questions">
-                <summary>Common questions</summary>
-                {['client', 'recruiter'].map(category => (
-                  <section key={category} aria-labelledby={`questions-${category}`}>
-                    <h2 id={`questions-${category}`}>{category === 'client' ? 'For clients' : 'For recruiters'}</h2>
-                    <div className="follow-ups">
-                      {faqTopics.filter(topic => topic.category === category).map(topic => (
-                        <button key={topic.id} type="button" onClick={() => ask(topic.prompt, topic)}>{topic.prompt}</button>
-                      ))}
-                    </div>
-                  </section>
-                ))}
-              </details>
-            </section>
-          ) : (
-            <section className="conversation content-width" role="log" aria-label="Portfolio conversation">
-              {messages.map((reply, index) => {
-                const { text, topic } = reply
-                const isThinking = pendingReply === reply
-                const summary = topic?.summary ?? unmatchedSummary
-                return (
-                  <div className="exchange" key={index}>
-                    <p className="question">{text}</p>
-                    <article className="answer">
-                      <span className="answer-icon" aria-hidden="true"><Sparkles size={17} /></span>
-                      {isThinking ? (
-                        <div className="answer-body thinking-reply" role="status">
-                          Thinking…
-                          <span className="thinking-dots" aria-hidden="true"><i /><i /><i /></span>
-                        </div>
-                      ) : (
-                        <div className="answer-body reply-body">
-                          <h2>{topic?.heading ?? topic?.label ?? 'Portfolio assistant'}</h2>
-                          <p>{summary}</p>
-                          <div>
-                            {!topic && (
-                              <a className="email-question" href={`mailto:${profile.email}?subject=${encodeURIComponent('Portfolio question')}&body=${encodeURIComponent(text)}`}>
-                                <Mail size={16} aria-hidden="true" /> Email this question to JC
-                              </a>
-                            )}
-                            {topic?.details && (
-                              <dl className={topic.id === 'experience' ? 'experience-timeline' : undefined}>
-                                {topic.details.map(([name, description], index) => (
-                                  <div key={name}>
-                                    {topic.id === 'experience' && (
-                                      <span className="timeline-marker" aria-hidden="true" style={{ '--timeline-pulse-delay': `${index * 190}ms` }} />
-                                    )}
-                                    <dt>{name}</dt><dd>{description}</dd>
-                                  </div>
-                                ))}
-                              </dl>
-                            )}
-                            {topic?.websites?.length > 0 && <WebsiteShowcase websites={topic.websites} />}
-                            {topic?.caseStudies?.length > 0 && (
-                              <ul className="answer-links">{topic.caseStudies.map(item => <li key={item.slug}><a href={caseStudyHref(item)}>{item.name} case study</a></li>)}</ul>
-                            )}
-                            {topic?.action && (
-                              <WorkEmailLink href={topic.action.href} contact>{topic.action.label}</WorkEmailLink>
-                            )}
-                            {topic?.links && <ul className="answer-links">{topic.links.map(([label, href]) => <li key={href}><a href={href}>{label}</a></li>)}</ul>}
-                          </div>
-                        </div>
-                      )}
-                    </article>
-                    {!isThinking && <div className="follow-ups" role="group" aria-label="Suggested follow-up questions">
-                      {(followUps[topic?.category ?? topic?.id] ?? followUps.about).map(id => {
-                        const suggestion = allTopics.find(item => item.id === id)
-                        return <button key={id} onClick={() => ask(suggestion.prompt, suggestion)}>{suggestion.prompt}</button>
-                      })}
-                    </div>}
+                <h1 id="welcome-title">Hi, I’m <span>{profile.firstName}.</span></h1>
+                <p>Welcome to my interactive portfolio. Ask me about my work,<br className="desktop-break" /> experience, or the tools I use.</p>
+                <WorkEmailLink href={workEmailHref}>Work with me</WorkEmailLink>
+                <section className="featured-projects" aria-labelledby="featured-heading">
+                  <h2 id="featured-heading">Featured projects</h2>
+                  <div className="featured-grid">
+                    {caseStudies.map(item => (
+                      <a key={item.slug} href={caseStudyHref(item)}>
+                        <FeaturedMetric metric={item.metric} ready={portfolioReady} />
+                        <span>{item.name}</span>
+                        <small>{item.outcome}</small>
+                      </a>
+                    ))}
                   </div>
-                )
-              })}
-            </section>
-          )}
+                </section>
+                <div className="suggestions">
+                  {topics.filter(topic => ['experience', 'projects', 'websites', 'skills'].includes(topic.id)).map(topic => {
+                    return <button className="suggestion" key={topic.id} onClick={() => ask(topic.prompt, topic)}>
+                      <span className="suggestion-icon"><TopicIcon id={topic.id} size={18} /></span>
+                      <span className="suggestion-text"><strong>{topic.prompt}</strong><small>{topic.description}</small></span>
+                      <ChevronRight className="suggestion-chevron" size={16} aria-hidden="true" />
+                    </button>
+                  })}
+                </div>
+                <details className="common-questions">
+                  <summary>Common questions</summary>
+                  {['client', 'recruiter'].map(category => (
+                    <section key={category} aria-labelledby={`questions-${category}`}>
+                      <h2 id={`questions-${category}`}>{category === 'client' ? 'For clients' : 'For recruiters'}</h2>
+                      <div className="follow-ups">
+                        {faqTopics.filter(topic => topic.category === category).map(topic => (
+                          <button key={topic.id} type="button" onClick={() => ask(topic.prompt, topic)}>{topic.prompt}</button>
+                        ))}
+                      </div>
+                    </section>
+                  ))}
+                </details>
+              </section>
+            ) : (
+              <section className="conversation content-width" role="log" aria-label="Portfolio conversation">
+                {messages.map((reply, index) => {
+                  const { text, topic } = reply
+                  const isThinking = pendingReply === reply
+                  const summary = topic?.summary ?? unmatchedSummary
+                  return (
+                    <div className="exchange" key={index}>
+                      <p className="question" id={`chat-question-${index + 1}`}>{text}</p>
+                      <article className="answer">
+                        <span className="answer-icon" aria-hidden="true"><Sparkles size={17} /></span>
+                        {isThinking ? (
+                          <div className="answer-body thinking-reply" role="status">
+                            Thinking…
+                            <span className="thinking-dots" aria-hidden="true"><i /><i /><i /></span>
+                          </div>
+                        ) : (
+                          <div className="answer-body reply-body">
+                            <h2>{topic?.heading ?? topic?.label ?? 'Portfolio assistant'}</h2>
+                            <p>{summary}</p>
+                            <div>
+                              {!topic && (
+                                <a className="email-question" href={`mailto:${profile.email}?subject=${encodeURIComponent('Portfolio question')}&body=${encodeURIComponent(text)}`}>
+                                  <Mail size={16} aria-hidden="true" /> Email this question to JC
+                                </a>
+                              )}
+                              {topic?.details && (
+                                <dl className={topic.id === 'experience' ? 'experience-timeline' : undefined}>
+                                  {topic.details.map(([name, description], index) => (
+                                    <div key={name}>
+                                      {topic.id === 'experience' && (
+                                        <span className="timeline-marker" aria-hidden="true" style={{ '--timeline-pulse-delay': `${index * 190}ms` }} />
+                                      )}
+                                      <dt>{name}</dt><dd>{description}</dd>
+                                    </div>
+                                  ))}
+                                </dl>
+                              )}
+                              {topic?.websites?.length > 0 && <WebsiteShowcase websites={topic.websites} />}
+                              {topic?.caseStudies?.length > 0 && (
+                                <ul className="answer-links">{topic.caseStudies.map(item => <li key={item.slug}><a href={caseStudyHref(item)}>{item.name} case study</a></li>)}</ul>
+                              )}
+                              {topic?.action && (
+                                <WorkEmailLink href={topic.action.href} contact>{topic.action.label}</WorkEmailLink>
+                              )}
+                              {topic?.links && <ul className="answer-links">{topic.links.map(([label, href]) => <li key={href}><a href={href}>{label}</a></li>)}</ul>}
+                            </div>
+                          </div>
+                        )}
+                      </article>
+                      {!isThinking && <div className="follow-ups" role="group" aria-label="Suggested follow-up questions">
+                        {(followUps[topic?.category ?? topic?.id] ?? followUps.about).map(id => {
+                          const suggestion = allTopics.find(item => item.id === id)
+                          return <button key={id} onClick={() => ask(suggestion.prompt, suggestion)}>{suggestion.prompt}</button>
+                        })}
+                      </div>}
+                    </div>
+                  )
+                })}
+              </section>
+            )}
+          </div>
         </div>
 
         <footer className={`bottom content-width${composerOpen ? ' mobile-compose-open' : ''}`} hidden={Boolean(study)}>

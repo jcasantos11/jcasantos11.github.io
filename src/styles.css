@@ -62,15 +62,15 @@ button:disabled { cursor: default; }
 .brand-accent { color: var(--accent); }
 .new-chat { display: flex; align-items: center; justify-content: center; gap: 9px; margin-top: 35px; min-height: 44px; border: 1px solid var(--accent-border); border-radius: 9px; background: var(--accent-surface); color: var(--accent); font-weight: 700; font-size: .875rem; }
 .new-chat:hover { background: var(--accent-hover); }
-nav { margin-top: 31px; }
-nav h2 { margin: 0 0 10px 11px; color: var(--muted); font-size: .8125rem; font-weight: 700; }
-nav button { display: flex; width: 100%; align-items: center; gap: 11px; border: 0; border-radius: 8px; background: transparent; padding: 11px; font-size: .875rem; color: var(--body-text); text-align: left; }
-nav svg { color: var(--muted); }
-nav button[aria-current] { background: var(--accent-surface); color: var(--accent); }
+.sidebar nav { margin-top: 31px; }
+.sidebar nav h2 { margin: 0 0 10px 11px; color: var(--muted); font-size: .8125rem; font-weight: 700; }
+.sidebar nav button { display: flex; width: 100%; align-items: center; gap: 11px; border: 0; border-radius: 8px; background: transparent; padding: 11px; font-size: .875rem; color: var(--body-text); text-align: left; }
+.sidebar nav svg { color: var(--muted); }
+.sidebar nav button[aria-current] { background: var(--accent-surface); color: var(--accent); }
 @media (hover: hover) and (pointer: fine) {
-  nav button:hover:not([aria-current]) { background: var(--surface); }
+  .sidebar nav button:hover:not([aria-current]) { background: var(--surface); }
 }
-nav button[aria-current] svg { color: var(--accent); }
+.sidebar nav button[aria-current] svg { color: var(--accent); }
 .profile { position: relative; padding: 8px 0 0; margin-top: auto; border-top: 1px solid var(--line); }
 .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-surface); color: var(--accent); font-size: .8125rem; font-weight: 800; }
 .profile strong, .profile-identity > span { display: block; }
@@ -306,8 +306,8 @@ nav button[aria-current] svg { color: var(--accent); }
 @media (max-height: 480px) {
   .sidebar { padding-block: 10px; }
   .new-chat, nav { margin-top: 10px; }
-  nav h2 { margin-bottom: 4px; }
-  nav button { padding-block: 5px; }
+  .sidebar nav h2 { margin-bottom: 4px; }
+  .sidebar nav button { padding-block: 5px; }
   .profile { padding-top: 6px; }
 }
 @media (pointer: coarse) {
@@ -837,3 +837,67 @@ nav button[aria-current] svg { color: var(--accent); }
 }
 .common-questions h2 { margin: 12px 0 6px; font-size: .875rem; }
 .common-questions .follow-ups { margin: 0 0 10px; }
+
+.chat-stage { position: relative; display: grid; grid-template-rows: minmax(0, 1fr); min-width: 0; min-height: 0; }
+.chat-stage.has-chat .conversation {
+  width: min(680px, calc(100% - 54px));
+  margin-inline: max(39px, calc((100% - 680px) / 2)) auto;
+}
+.chat-jump-rail {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: max(4px, calc((100% - 680px) / 2 - 38px));
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  width: 30px;
+  max-height: min(45dvh, 440px, calc(100% - 24px));
+  margin: 0;
+  transform: translateY(-50%);
+}
+.chat-jump-list {
+  min-height: 0;
+  margin: 0;
+  padding: 2px 3px;
+  list-style: none;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.chat-jump-marker {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 27px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+}
+.chat-jump-marker::before {
+  content: '';
+  width: 11px;
+  height: 3px;
+  border-radius: 999px;
+  background: currentColor;
+}
+.chat-jump-marker:is(:hover, :focus-visible) { color: var(--accent); background: var(--accent-surface); }
+.chat-jump-marker:focus-visible { outline-offset: 0; }
+.chat-jump-tooltip {
+  position: absolute;
+  z-index: 2;
+  left: calc(100% + 5px);
+  width: max-content;
+  max-width: min(260px, calc(100vw - 82px));
+  padding: 7px 10px;
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: 0 0 16px var(--glow-active);
+  transform: translateY(-50%);
+  font-size: .8125rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
