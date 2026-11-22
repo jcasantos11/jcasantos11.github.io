@@ -927,3 +927,33 @@ button:disabled { cursor: default; }
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
+
+@media (hover: hover) and (pointer: fine) {
+  .chat-jump-rail:not(.is-scrubbing):has(.chat-jump-tooltip) .chat-jump-marker:not(:hover, :focus-visible) {
+    opacity: .55;
+  }
+  .chat-jump-rail:not(.is-scrubbing) .chat-jump-marker:is(:hover, :focus-visible)::before {
+    width: 14px;
+    box-shadow: 0 0 9px var(--accent);
+  }
+  .chat-jump-rail:not(.is-scrubbing) .chat-jump-tooltip {
+    left: calc(100% + 10px);
+    max-width: min(300px, calc(100vw - 82px));
+    padding: 12px 15px;
+    border-radius: 14px;
+    background: radial-gradient(ellipse at 15% 0, var(--glow-active), transparent 76%),
+      color-mix(in srgb, var(--surface) 91%, transparent);
+    color: var(--body-text);
+    box-shadow: inset 0 1px 0 var(--glow-active), 0 8px 22px #10091e30, 0 0 20px var(--glow);
+    backdrop-filter: blur(12px);
+    font-weight: 700;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .chat-jump-rail:not(.is-scrubbing) .chat-jump-tooltip { animation: question-spotlight-in 180ms ease-out both; }
+}
+@keyframes question-spotlight-in {
+  from { opacity: 0; transform: translate(-5px, -50%) scale(.97); }
+  to { opacity: 1; transform: translate(0, -50%) scale(1); }
+}

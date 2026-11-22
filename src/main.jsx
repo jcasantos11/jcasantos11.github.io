@@ -232,7 +232,7 @@ function ChatJumpRail({ messages, onJump }) {
   }
 
   function beginScrub(event) {
-    if (event.button !== 0 || gesture.current) return
+    if (event.pointerType === 'mouse' || event.button !== 0 || gesture.current) return
     const marker = event.target.closest('.chat-jump-marker')
     if (!marker) return
 
@@ -303,13 +303,13 @@ function ChatJumpRail({ messages, onJump }) {
               onKeyDown={event => {
                 if (event.key === 'Escape') setTooltip(null)
               }}
-              onClick={event => { if (event.detail === 0) onJump(index) }}
+              onClick={() => onJump(index)}
             />
           </li>
         ))}
       </ol>
       {scrubbing && tooltip && <span className="chat-jump-thumb" style={{ top: tooltip.top }} aria-hidden="true" />}
-      {tooltip && <span className="chat-jump-tooltip" style={{ top: tooltip.top }} aria-hidden="true">{tooltip.text}</span>}
+      {tooltip && <span className="chat-jump-tooltip" key={tooltip.text} style={{ top: tooltip.top }} aria-hidden="true">{tooltip.text}</span>}
     </nav>
   )
 }
