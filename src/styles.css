@@ -613,8 +613,8 @@ button:disabled { cursor: default; }
   }
 }
 @keyframes work-email-launch {
-  0% { transform: translate(0, 0) rotate(0); color: var(--page); }
-  16% { transform: translate(-2px, 3px) rotate(9deg) scale(.92); color: var(--page); }
+  0% { transform: translate(0, 0) rotate(0); color: var(--work-envelope-color, var(--page)); }
+  16% { transform: translate(-2px, 3px) rotate(9deg) scale(.92); color: var(--work-envelope-color, var(--page)); }
   43% { transform: translate(calc(23px * var(--work-flight-run, 1)), calc(-34px * var(--work-flight-rise, 1))) rotate(24deg) scale(1.18); color: var(--accent); }
   76% { opacity: 1; }
   100% { transform: translate(calc(60px * var(--work-flight-run, 1)), calc(-77px * var(--work-flight-rise, 1))) rotate(38deg) scale(.84); color: var(--accent); opacity: 0; }
@@ -706,12 +706,23 @@ button:disabled { cursor: default; }
 .header-work-cta {
   --work-flight-rise: -1;
   --work-flight-run: -1;
+  --work-envelope-color: var(--accent);
   position: relative;
   min-height: 36px;
   margin: 0;
   padding: 5px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 46%, var(--line));
+  background: linear-gradient(150deg, var(--glow-active), transparent 65%),
+    color-mix(in srgb, var(--accent-surface) 73%, transparent);
+  color: var(--accent);
+  box-shadow: inset 0 1px 0 var(--glow-active), inset 0 -1px 0 var(--line), 0 3px 13px var(--glow);
+  backdrop-filter: blur(12px) saturate(145%);
   transform-origin: top left;
   white-space: nowrap;
+}
+.header-work-cta:is(:hover, :focus-visible) {
+  border-color: var(--accent);
+  box-shadow: inset 0 1px 0 var(--glow-active), 0 3px 16px var(--glow-active);
 }
 @media (max-width: 760px) {
   .topbar:has(.header-work-cta) { position: relative; z-index: 0; }
