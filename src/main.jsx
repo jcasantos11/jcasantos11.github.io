@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 import {
-  ArrowLeft, ArrowUp, BriefcaseBusiness, ChevronRight, CodeXml, FolderOpen, Globe, GraduationCap, Mail, MailOpen, MapPin, Menu, Moon, PanelLeftClose, PanelLeftOpen, FileDown, Sun, ChevronUp,
+  ArrowLeft, ArrowUp, BriefcaseBusiness, ChevronRight, CircleHelp, CodeXml, FolderOpen, Globe, GraduationCap, Mail, MailOpen, MapPin, Menu, Moon, PanelLeftClose, PanelLeftOpen, FileDown, Sun, ChevronUp,
   MessageCircle, PenLine, Plus, Sparkles, UserRound, X,
 } from 'lucide-react'
 import { faqTopics, findAnswerTopic, profile, topics, workEmailHref } from './profile'
@@ -298,6 +298,66 @@ function ChatJumpRail({ messages, onJump }) {
       {scrubbing && tooltip && <span className="chat-jump-thumb" style={{ top: tooltip.top }} aria-hidden="true" />}
       {tooltip && <span className="chat-jump-tooltip" key={tooltip.text} style={{ top: tooltip.top }} aria-hidden="true">{tooltip.text}</span>}
     </nav>
+  )
+}
+
+function SiteInfo() {
+  const container = useRef(null)
+  const [mode, setMode] = useState('closed')
+  const open = mode !== 'closed'
+
+  useEffect(() => {
+    if (!open) return
+
+    function closeOutside(event) {
+      if (!container.current?.contains(event.target)) setMode('closed')
+    }
+
+    function closeOnEscape(event) {
+      if (event.key !== 'Escape') return
+      event.stopPropagation()
+      setMode('closed')
+    }
+
+    document.addEventListener('pointerdown', closeOutside)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('pointerdown', closeOutside)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [open])
+
+  return (
+    <div
+      className="site-info"
+      ref={container}
+      onPointerLeave={() => setMode(current => current === 'preview' ? 'closed' : current)}
+    >
+      <button
+        className="icon-button site-info-toggle"
+        type="button"
+        aria-label="About this site"
+        aria-expanded={open}
+        aria-controls="site-info-panel"
+        onPointerEnter={event => {
+          if (event.pointerType === 'mouse') setMode(current => current === 'closed' ? 'preview' : current)
+        }}
+        onClick={() => setMode(current => current === 'pinned' ? 'closed' : 'pinned')}
+      >
+        <CircleHelp size={19} aria-hidden="true" />
+      </button>
+      <section className="site-info-panel" id="site-info-panel" aria-labelledby="site-info-heading" hidden={!open}>
+        <h2 id="site-info-heading">About this site</h2>
+        <dl>
+          <dt>Interface</dt>
+          <dd>React and JavaScript power the chat, with custom CSS for the layout, themes, and motion. The icons are from Lucide.</dd>
+          <dt>Chat</dt>
+          <dd>Questions match curated replies drawn from my résumé and case studies. Matching runs in your browser without an AI API.</dd>
+          <dt>Deployment</dt>
+          <dd>Vite builds the static site, and GitHub Actions publishes it to GitHub Pages.</dd>
+        </dl>
+      </section>
+    </div>
   )
 }
 
@@ -605,6 +665,7 @@ function App() {
             <button key={topic.id} aria-label={topic.label} data-tooltip={topic.label} aria-current={activeTopic === topic.id ? 'true' : undefined} onClick={() => openSidebarTopic(topic)}><TopicIcon id={topic.id} size={17} /><span className="topic-label">{topic.label}</span></button>
           ))}
         </nav>
+        <SiteInfo />
         <details className="profile">
           <summary aria-label="Contact and location" data-tooltip="Contact and location">
             <span className="avatar">{profile.initials}</span>
