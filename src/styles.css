@@ -840,25 +840,28 @@ button:disabled { cursor: default; }
 
 .chat-stage { position: relative; display: grid; grid-template-rows: minmax(0, 1fr); min-width: 0; min-height: 0; }
 .chat-stage.has-chat .conversation {
-  width: min(680px, calc(100% - 54px));
-  margin-inline: max(39px, calc((100% - 680px) / 2)) auto;
+  width: min(680px, calc(100% - 49px));
+  margin-inline: max(34px, calc((100% - 680px) / 2)) auto;
 }
 .chat-jump-rail {
   position: absolute;
   z-index: 1;
   top: 50%;
-  left: max(4px, calc((100% - 680px) / 2 - 38px));
+  left: max(4px, calc((100% - 680px) / 2 - 33px));
   display: grid;
   grid-template-rows: minmax(0, 1fr);
-  width: 30px;
+  width: 26px;
   max-height: min(45dvh, 440px, calc(100% - 24px));
   margin: 0;
   transform: translateY(-50%);
+  touch-action: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 .chat-jump-list {
   min-height: 0;
   margin: 0;
-  padding: 2px 3px;
+  padding: 2px 1px;
   list-style: none;
   overflow-y: auto;
   scrollbar-width: none;
@@ -867,7 +870,7 @@ button:disabled { cursor: default; }
   display: grid;
   place-items: center;
   width: 24px;
-  height: 27px;
+  height: 24px;
   padding: 0;
   border: 0;
   border-radius: 6px;
@@ -876,13 +879,21 @@ button:disabled { cursor: default; }
 }
 .chat-jump-marker::before {
   content: '';
-  width: 11px;
-  height: 3px;
+  width: 7px;
+  height: 2px;
   border-radius: 999px;
   background: currentColor;
 }
-.chat-jump-marker:is(:hover, :focus-visible) { color: var(--accent); background: var(--accent-surface); }
-.chat-jump-marker:focus-visible { outline-offset: 0; }
+.chat-jump-marker:focus-visible {
+  color: var(--accent);
+  background: var(--accent-surface);
+  outline-offset: 0;
+}
+.chat-jump-marker:focus-visible::before { width: 11px; height: 3px; }
+@media (hover: hover) and (pointer: fine) {
+  .chat-jump-marker:hover { color: var(--accent); background: var(--accent-surface); }
+  .chat-jump-marker:hover::before { width: 11px; height: 3px; }
+}
 .chat-jump-tooltip {
   position: absolute;
   z-index: 2;
@@ -902,11 +913,6 @@ button:disabled { cursor: default; }
   pointer-events: none;
 }
 
-.chat-jump-rail {
-  touch-action: none;
-  user-select: none;
-  -webkit-touch-callout: none;
-}
 .chat-jump-rail.is-scrubbing { background: var(--accent-surface); border-radius: 8px; cursor: ns-resize; }
 .chat-jump-rail.is-scrubbing .chat-jump-marker { cursor: ns-resize; }
 .chat-jump-thumb {
