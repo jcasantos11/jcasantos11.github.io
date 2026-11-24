@@ -30,7 +30,7 @@ export const topics = [
     keywords: /experience|career|how many years|how long have you been (?:working|coding|developing)|work(?:ed)? (?:history|at|for)|roles?|jobs?|employers?|resume|résumé|gold coast|q digital|kotis|sabinc|novanude|pinoypubliko|trustmix|\bpsi\b/i,
     summary: 'I’ve worked across software engineering, WordPress development, web optimization, and eCommerce. Here’s a timeline of my roles.',
     details: [
-      ['Gold Coast Websites / Q Digital · Oct 2025–Present', 'WordPress Developer. Build responsive WordPress sites, customize WooCommerce, resolve performance issues, and manage deployments and quality checks.'],
+      ['Gold Coast Websites / Q Digital · Oct 2025–Nov 2026', 'WordPress Developer. Built responsive WordPress sites, customized WooCommerce, resolved performance issues, and managed deployments and quality checks.'],
       ['Kotis Design · Nov 2024–Oct 2025', 'Web Optimization & Content Organization. Maintained and optimized the primary WordPress site, led its migration to Elementor, and built reusable HubSpot modules, forms, and automation assets.'],
       ['SABInc · Apr 2022–Oct 2024', 'Project Consultant / Software Engineer. Independently designed the architecture, database schemas, and business logic for Laravel applications serving approximately 50 users.'],
       ['Novanude.com · Feb 2023–Jul 2024', 'Shopify Developer. Built storefront features with Shopify Liquid and JavaScript and integrated GA4, Hotjar, Klaviyo, and Meta Business Suite. The work contributed to a reported 25% improvement in site performance and a 15% increase in user engagement.'],
